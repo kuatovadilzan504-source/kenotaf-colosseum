@@ -53,7 +53,6 @@ The online parts sit on top of the real game, so the quickest way to see them is
    first window, **Книга → Письма** shows how many couriers read each of your letters.
    (Letters from other couriers may already be waiting there.)
 
-The demo video ([DEMO_SCRIPT.md](DEMO_SCRIPT.md)) shows all of this in under three minutes if you prefer to watch first.
 
 ## Path B — the Solana part (≈5 more minutes)
 

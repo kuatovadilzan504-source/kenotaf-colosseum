@@ -4,13 +4,7 @@
 You are a courier in an underground arcology whose Council forbids couriers to read the letters they carry. You read them anyway —
 and now your wallet is your account, every deed goes into a Book you can seal on-chain, and couriers leave letters for each other.
 
-| | |
-|---|---|
-| **Play** | https://xv979cyc.idos.games/ · platform page https://idosgames.com/app/XV979CYC/ |
-| **Reviewers: start here** | [docs/JUDGES.md](docs/JUDGES.md) — a guest path (no wallet) and the Solana path |
-| Demo video | _link goes here after recording_ · script: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) |
-| Submission text | [docs/SUBMISSION.md](docs/SUBMISSION.md) |
-| Stack | vanilla JS + Canvas/WebGL2 (game) · iDos Games platform, React, Vite (host) · Solana **devnet** |
+Reviewing? Start with [docs/JUDGES.md](docs/JUDGES.md).
 
 ![menu](docs/img/menu.jpg)
 
@@ -47,7 +41,7 @@ bound to your wallet.
  │  host page (React, iDos Games SDK)          game (iframe, vanilla JS)
  │  ├ wallet sign-in                           ├ js/core/chain.js   ← the ONLY code that knows the host
  │  ├ module "kenotaf"  ◄── postMessage ─────► │ hooks: lore, guardian, stand, exam, ending, mail station
- │  │   bridge → Book, leaderboards, letters   └ works alone (itch, file://): every Chain call is a no-op
+ │  │   bridge → Book, leaderboards, letters   └ works alone (file://): every Chain call is a no-op
  │  └ Book / letter dialogs, seal (Memo tx)
  └──────────────┬──────────────────────────────────┬───────────────┘
                 │ platform API                     │ Solana devnet RPC
@@ -91,9 +85,7 @@ node scripts/test-seal.ts              # Memo seal on devnet; needs ~0.1 devnet 
 node scripts/verify-seal.mjs 1         # recompute courier №1's digest (NS=dev_ for the test namespace)
 ```
 
-The game's own checks (Playwright + Edge, see `tools/`): `node tools/verify.js`.
 
-Release: `VITE_KZ_NS=kz_ npm run build && node scripts/make-zip.mjs dist ../build.zip`, then upload through the platform's build API.
 
 ## Repository layout
 
@@ -104,7 +96,7 @@ idos/                  the iDos Games host
   src/modules/kenotaf/ module.tsx (mounts the game), bridge.ts, backend.ts, chainlib.ts (Memo seal), wallet.ts, ui/
   src/walletLogin.tsx  Solana sign-in
   scripts/             gen-config, smoke tests, verify-seal, zip packer
-docs/                  JUDGES.md, DEMO_SCRIPT.md, SUBMISSION.md, game design docs, screenshots
+docs/                  JUDGES.md, game design docs, screenshots
 tools/                 the game's automated checks and screenshot labs
 screenshots/           art
 ```
@@ -171,7 +163,7 @@ and sign-in through the idosgames.com frame. **Not built:** NFT badges, other co
 ## Структура
 
 ```
-game/                    ВСЯ ИГРА — и только она: эту папку можно заархивировать и залить на itch как есть
+game/                    вся игра
   index.html             разметка, порядок скриптов
   css/style.css
   js/core/               утилиты, конфиг, настройки, ввод, звук, музыка (секвенсор с лейтмотивом), физика, сохранение
@@ -182,52 +174,8 @@ game/                    ВСЯ ИГРА — и только она: эту па
   js/combat/             бой «ломать, а не убивать»: узлы, механизм, обломки, отдача, детали-примитивы
   js/entities/           игрок, бой, снаряды и зоны боссов (bossfx.js), мехи врагов и боссов (mechs/)
   js/ui/                 HUD, реплики и голоса (voice.js), карта-планшет, меню и настройки, ранец, портреты, сцены, обучение
-tools/                   автотесты, лаборатории, упаковка, запись видео
 docs/                    дизайн-документ (DESIGN.md), GDD, анализ
-screenshots/, verify/    снимки
-dist/                    сборки: kenotaf-itch.zip (один файл), kenotaf-finale.webm (не в git)
+screenshots/             снимки
 ```
 
 Скрипты подключены классическими `<script>`, без ES-модулей: иначе игра не запустится по `file://`.
-
-## Проверки
-
-Нужен Playwright с Chromium (`npm i -g playwright`) или `PLAYWRIGHT_PATH=<путь к playwright-core>`
-(на Windows берётся установленный Edge).
-
-```
-node tools/smoke.js        # каждая комната: загрузка, 5 с случайного ввода, точки прибытия у дверей
-node tools/combat.js       # 65 сценариев: окна прерывания, поломки, честные хитбоксы, боссы, элита, перегрев и разрыв,
-                           # несрываемые атаки, вариации и мини-боссы, связки движения, ранец, тайники, хабы, ориентиры, экзамен,
-                           # честность Примарха (в оглушении/перегреве/приземлении урона нет)
-node tools/duel.js         # бот с идеальным вводом против элиты и мини-босса каждой зоны: мини-босс дольше элиты, 2–3 цикла атак (--why)
-node tools/trials.js       # испытательные стенды: «идеальный ввод» проходит каждую полосу в норму без касаний, призрак пишется;
-                           # стойки с ударом вниз непроходимы без него
-node tools/progress.js     # решатель прогрессии: финал достижим, без любой способности — нет
-node tools/progress.js --strict   # то же с допусками ±0,3 м и запоздалым вводом: пиксельная точность = непроходимо, ловушки — ошибка
-node tools/progress.js --from z1_drain   # нет софтлока: из комнаты (с её набором способностей) достижимы хаб и финал
-node tools/bosslab.js z5_boss 40 out.png --kill   # бой с боссом без ввода, фазы, смерть, кадр
-node tools/reach.js z4_exam_b:pulse,dash,vjump     # достижимость дверей и предметов в комнате (--strict — с допусками)
-node tools/hooklab.js out.png z1x_pipes 3 33   # траектория гарпуна из точки: подлёт, бросок, приземление (--chain)
-node tools/perf.js --gpu   # FPS настоящего цикла на 1920×1080 и утечки на переходах (WebGL-кадр)
-node tools/glcheck.js      # WebGL-кадр без NaN: ключевые комнаты, курьер идёт, HDR-буфер проверяется целиком
-node tools/gfx.js папка --audit [--nofx]   # художественный аудит: постоянные точки камеры, листы в цвете, тоне и миниатюрах; --nofx — без эффектов
-node tools/chars.js папка  # курьер в позах, механизмы и стражи: цвет, тёмный фон, чёрный силуэт, игровой масштаб
-node tools/shot.js out.png комната x y --gpu   # снимок через WebGL (без --gpu — программный рендер и Canvas 2D)
-node tools/maplayout.js    # схема мира: пересечения комнат (--fix раздвигает)
-node tools/finale.js       # финал в реальном времени: Печать, подъём, поверхность, небо, титры, меню (--b — концовка B)
-node tools/finalevideo.js  # запись финала и титров со звуком → dist/kenotaf-finale.webm (--a — концовка A)
-node tools/lore.js         # лор: в строках игры нет людей, людского тела, семьи и еды — мир механизмов
-node tools/verify.js       # финальная проверка: меню, тряска, фонарь, первые 10 комнат, два босса, обе концовки + снимки
-```
-
-## Публикация на itch.io
-
-```
-node tools/pack.js        # → dist/kenotaf-itch.zip: один index.html со встроенными стилями и скриптами
-                          # (или просто заархивировать папку game/ — в ней только игра, ~90 файлов)
-node tools/packcheck.js   # сборка открывается с file://, внешних файлов нет, файлов ≤ 1000
-```
-
-На itch.io: Kind of project — HTML, загрузить zip, отметить «This file will be played in the browser»,
-размер окна 1280×720, включить кнопку полноэкранного режима.
