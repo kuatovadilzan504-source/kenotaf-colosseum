@@ -1,0 +1,26 @@
+{
+  "name": "ОТРАЖАТЕЛЬ",
+  "symbol": "KZMOD",
+  "description": "РЕМОНТ КОПИТСЯ ОТ СРЫВОВ ЗАМАХА И ИДЕАЛЬНЫХ УКЛОНЕНИЙ — НЕ ОТ УДАРОВ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
+  "image": "https://xv979cyc.idos.games/nft/weld_parry.svg",
+  "external_url": "https://xv979cyc.idos.games/",
+  "attributes": [
+    {
+      "trait_type": "Module",
+      "value": "weld_parry"
+    },
+    {
+      "trait_type": "Game",
+      "value": "КЕНОТАФ"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://xv979cyc.idos.games/nft/weld_parry.svg",
+        "type": "image/svg+xml"
+      }
+    ]
+  }
+}

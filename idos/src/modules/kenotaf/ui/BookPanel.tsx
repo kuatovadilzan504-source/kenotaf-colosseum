@@ -2,14 +2,15 @@ import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } 
 import { useIDosGamesClient } from "@idosgames/react";
 import { Button, Popup, Tabs, errorText, v } from "@idosgames/react/ui";
 import * as be from "../backend";
-import { BOARDS, COL, ENDING_NAMES, GUARD_NAMES, LORE_TOTAL, OWN_ADDRESS, STANDS, STATION_NAMES } from "../ids";
+import { BOARDS, COL, ENDING_NAMES, GUARD_NAMES, LORE_TOTAL, MODULES, OWN_ADDRESS, STANDS, STATION_NAMES } from "../ids";
 import { airdrop, balanceSol, embedded, seal } from "../wallet";
 import { focusGame, setKz, useKz } from "../store";
+import { DepotTab } from "./DepotTab";
 
 // The Book of the Council: what the courier has done (entered by the platform, sealed on Solana by the
 // courier's own wallet), the records, what the other couriers did, and the courier's letters.
 
-type Tab = "book" | "records" | "council" | "letters";
+type Tab = "book" | "records" | "council" | "letters" | "depot";
 
 const fmtMs = (ms: number): string => {
   const m = Math.floor(ms / 60000);
@@ -23,11 +24,14 @@ const box: CSSProperties = { border: `1px solid ${v.panelEdge}`, borderRadius: 8
 const dim: CSSProperties = { color: v.textDim, fontSize: 13 };
 
 export function BookPanel(): ReactNode {
-  const { book, me } = useKz();
+  const { book, me, bookTab } = useKz();
   const [tab, setTab] = useState<Tab>("book");
+  useEffect(() => {
+    if (book) setTab(bookTab === "depot" ? "depot" : "book");
+  }, [book, bookTab]);
   if (!book || !me) return null;
   const close = (): void => {
-    setKz({ book: false });
+    setKz({ book: false, bookTab: null });
     focusGame();
   };
   return (
@@ -40,6 +44,7 @@ export function BookPanel(): ReactNode {
             { id: "book", label: "Моя книга" },
             { id: "records", label: "Рекорды" },
             { id: "council", label: "Совет" },
+            { id: "depot", label: "Склад" },
             { id: "letters", label: "Письма" },
           ]}
         />
@@ -47,6 +52,7 @@ export function BookPanel(): ReactNode {
           {tab === "book" && <BookTab />}
           {tab === "records" && <RecordsTab />}
           {tab === "council" && <CouncilTab />}
+          {tab === "depot" && <DepotTab />}
           {tab === "letters" && <LettersTab />}
         </div>
       </div>
@@ -68,6 +74,10 @@ function label(e: be.LedgerEntry): string {
       return `Экзамен Совета сдан${e.n ? `, ${fmtMs(e.n)}` : ""}`;
     case "end":
       return `Концовка «${ENDING_NAMES[e.ref] ?? e.ref}»`;
+    case "mint":
+      return `Модуль «${MODULES[e.ref] ?? e.ref}» записан в кошелёк`;
+    case "mail":
+      return `Модуль «${MODULES[e.ref.split(">")[0] ?? ""] ?? e.ref}» отправлен курьеру №${e.ref.split(">")[1] ?? "?"}`;
     default:
       return e.key;
   }
@@ -290,6 +300,7 @@ function CouncilTab(): ReactNode {
     keys.forEach((k) => {
       void be.counter(client, k).then((n) => live && setVals((p) => ({ ...p, [k]: n })));
     });
+    void client.dataCollections.getCounter(COL.assets, "total").then((c) => live && c.ok && setVals((p) => ({ ...p, modules: Number(c.data.Value) })));
     return () => {
       live = false;
     };
@@ -308,6 +319,7 @@ function CouncilTab(): ReactNode {
       <div style={box}>
         <div style={{ color: v.gold }}>Принесли присягу: {n("oath")}</div>
         <div style={dim}>Сдали Экзамен Совета: {n("exam:council")}</div>
+        <div style={dim}>Модулей записано в кошельки (Solana): {n("modules")}</div>
       </div>
       <div style={box}>
         <div style={{ color: v.gold, marginBottom: 8 }}>Чем закончили игру</div>

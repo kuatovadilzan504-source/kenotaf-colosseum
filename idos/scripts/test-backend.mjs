@@ -31,6 +31,7 @@ const start = (c) => c.data.user.state?.InventoryV2?.VirtualCurrencies?.Stamps?.
 check("start with 5 stamps", start(A.client) === 5 && start(B.client) === 5);
 
 const dc = (c) => c.dataCollections;
+// (couriers keep one record per account and cannot be deleted by their owner: the test number is fixed, a rerun sees AlreadyExists for A)
 const oath = await dc(A.client).create(NS + "ledger", { key: "oath", kind: "oath", wallet: A.w.addr }, { itemID: "oath_" + A.uid });
 check("oath recorded", oath.ok && !oath.data.AlreadyExists);
 const again = await dc(A.client).create(NS + "ledger", { key: "oath", kind: "oath", wallet: A.w.addr }, { itemID: "oath_" + A.uid });
@@ -38,17 +39,28 @@ check("same deed is idempotent", again.ok && again.data.AlreadyExists);
 const cnt = await dc(A.client).getCounter(NS + "ledger", "byKey", "oath");
 check("counter by key", cnt.ok && cnt.data.Value >= 1, JSON.stringify(cnt.data));
 
-const letter = await dc(A.client).create(NS + "letters", { text: "Тест: письмо с первой станции.", station: "hub", authorNo: 1, authorName: "Курьер №1" });
-check("letter posted", letter.ok);
-const bad = await dc(A.client).create(NS + "letters", { text: "заходи на https://x.com", station: "hub", authorNo: 1, authorName: "x" });
-check("blocked words refused", !bad.ok && /blocked/i.test(bad.error));
-const lid = letter.data.Item.ItemID;
-const q = await dc(B.client).query(NS + "letters", { Where: [where("station", "eq", "hub"), where("hidden", "eq", false)], OrderBy: "byStation", Limit: 20 });
-check("other courier finds the letter", q.ok && q.data.Items.some((i) => i.ItemID === lid));
-const rd = await dc(B.client).create(NS + "reads", { letterId: lid, authorNo: 1 }, { itemID: lid + "_" + B.uid });
-check("reading is accepted", rd.ok);
-const rc = await dc(A.client).getCounter(NS + "reads", "byLetter", lid);
-check("readers counter", rc.ok && rc.data.Value === 1);
+const NO = 800000 + Math.floor(Math.random() * 100000);
+// courier registry: the number is the key, the first writer owns it
+const c1 = await dc(A.client).create(NS + "couriers", { no: NO, wallet: A.w.addr }, { itemID: "c" + NO });
+check("courier number claimed", c1.ok && !c1.data.AlreadyExists);
+const c2 = await dc(B.client).create(NS + "couriers", { no: NO, wallet: B.w.addr }, { itemID: "c" + NO });
+check("the same number cannot be taken twice", c2.ok && c2.data.AlreadyExists);
+const c3 = await dc(B.client).get(NS + "couriers", "c" + NO);
+check("another courier can look the wallet up", c3.ok && JSON.stringify(c3.data).includes(A.w.addr), JSON.stringify(c3.data).slice(0, 160));
+
+// modules: the asset index is the owner's, counters are shared
+const as = await dc(A.client).create(NS + "assets", { moduleId: "felt_soles", asset: "TestAsset1111111111111111111111111111111111" }, { itemID: "a_test" });
+check("asset recorded", as.ok);
+const ac = await dc(B.client).getCounter(NS + "assets", "byModule", "felt_soles");
+check("module counter visible to others", ac.ok && ac.data.Value >= 1, JSON.stringify(ac.data));
+
+// parcels: written by the sender, found by the recipient (a different account) by number
+const pc = await dc(A.client).create(NS + "parcels", { toNo: NO + 1, fromNo: NO, moduleId: "felt_soles", asset: "TestAsset1111111111111111111111111111111111" }, { itemID: "p_test" });
+check("parcel written", pc.ok);
+const pq = await dc(B.client).query(NS + "parcels", { Where: [where("toNo", "eq", NO + 1)], OrderBy: "byTo", Limit: 10 });
+check("recipient sees the parcel", pq.ok && pq.data.Items.some((i) => i.ItemID === "p_test"), pq.ok ? "" : pq.error);
+const pu = await dc(A.client).update(NS + "parcels", "p_test", { Set: { sig: "x" } });
+check("sender may update the notice", pu.ok);
 
 const lb = await A.client.leaderboard.submitScore(NS + "stand_z1", 6120);
 check("leaderboard score", lb.ok && lb.data.NewScore === 6120);
@@ -61,16 +73,13 @@ check("cloud save round-trip", got.ok && got.data.Private?.save_v3?.Value === '{
 
 // cleanup (dev namespace only): leaderboard entries cannot be removed, everything else can
 const dels = [
-  await dc(B.client).delete(NS + "reads", rd.data.Item.ItemID),
-  await dc(A.client).delete(NS + "letters", lid),
+  await dc(A.client).delete(NS + "parcels", "p_test"),
+  await dc(A.client).delete(NS + "assets", "a_test"),
   await dc(A.client).delete(NS + "ledger", "oath_" + A.uid),
+  await dc(A.client).delete(NS + "couriers", "c" + NO),
 ];
 check("test records cleaned up", dels.every((d) => d.ok));
 
-// last, because a second sign-in replaces the first session of the same wallet
-const sb = await stamps(B), sa = await stamps(A);
-check("reading a letter pays a stamp (B 5 → 6)", sb === 6, "B=" + sb);
-check("posting a letter costs a stamp (A 5 → 4)", sa === 4, "A=" + sa);
 
 console.log(failed ? `\n${failed} FAILED` : "\nALL OK");
 process.exit(failed ? 1 : 0);

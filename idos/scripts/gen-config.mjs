@@ -7,7 +7,7 @@ const col = (p, dev) => ({
   [p+"ledger"]: { Kind:"UserOwned", Mode:"Strict", DisplayName:"Книга учёта Совета",
     Description:"Записи о прочитанном, победах и концовках курьера; sig — подпись Solana-транзакции, в которую запись запечатана",
     Fields:{ key:{Type:"String",Required:true,Immutable:true,Indexed:true,MaxLength:64},
-      kind:{Type:"String",Required:true,Immutable:true,Indexed:true,Enum:["oath","read","guard","stand","exam","end"]},
+      kind:{Type:"String",Required:true,Immutable:true,Indexed:true,Enum:["oath","read","guard","stand","exam","end","mint","mail"]},
       ref:{Type:"String",Immutable:true,MaxLength:64}, n:{Type:"Int",Immutable:true},
       wallet:{Type:"String",Immutable:true,MaxLength:64}, sig:{Type:"String",MaxLength:120} },
     SortKeys:[{ID:"byCreated",Components:[{Field:"createdAt",Descending:true}]},{ID:"byKindCreated",Components:[{Field:"kind"},{Field:"createdAt",Descending:true}]}],
@@ -32,6 +32,24 @@ const col = (p, dev) => ({
     Access:{Read:[{Mode:"Authenticated"}],Create:[{Mode:"Authenticated"}],...(dev?{Delete:[{Mode:"Owner"}]}:{})},
     Economy:{OnCreate:{Grant:{Entries:[{Type:"VirtualCurrency",CurrencyID:"Stamps",Amount:1}]}}},
     Limits:{MaxItemsPerOwner:400,MaxItemBytes:512} },
+  /* courier number → wallet: the number is the key of the record, so two couriers can never share one */
+  [p+"couriers"]: { Kind:"Shared", Mode:"Strict", DisplayName:"Курьеры", Description:"Номер курьера и его кошелёк; ключ записи c<номер> — номер выдаётся один раз",
+    Fields:{ no:{Type:"Int",Required:true,Immutable:true}, wallet:{Type:"String",Immutable:true,MaxLength:64} },
+    Access:{Read:[{Mode:"Authenticated"}],Create:[{Mode:"Authenticated"}],...(dev?{Delete:[{Mode:"Owner"}]}:{})}, Limits:{MaxItemsPerOwner:1,MaxItemBytes:256} },
+  /* modules written into wallets: the address of the Core asset; ownership itself is read from Solana */
+  [p+"assets"]: { Kind:"UserOwned", Mode:"Strict", DisplayName:"Модули в кошельке", Description:"Какой Core-актив Solana соответствует модулю ранца курьера",
+    Fields:{ moduleId:{Type:"String",Required:true,Immutable:true,Indexed:true,MaxLength:32}, asset:{Type:"String",Required:true,MaxLength:64} },
+    SortKeys:[{ID:"byCreated",Components:[{Field:"createdAt",Descending:true}]}],
+    Counters:[{ID:"byModule",Kind:"Count",GroupBy:"moduleId"},{ID:"total",Kind:"Count"}],
+    Access:{Read:[{Mode:"Authenticated"}],Create:[{Mode:"Authenticated"}],Update:[{Mode:"Owner"}],...(dev?{Delete:[{Mode:"Owner"}]}:{})},
+    Limits:{MaxItemsPerOwner:40,MaxItemBytes:512} },
+  /* the parcel is a notice for the recipient; what matters is who holds the asset on chain */
+  [p+"parcels"]: { Kind:"Temporary", Mode:"Strict", DisplayName:"Посылки", Description:"Модуль отправлен другому курьеру (передача Core-актива в Solana)",
+    Fields:{ toNo:{Type:"Int",Required:true,Immutable:true,Indexed:true}, fromNo:{Type:"Int",Immutable:true}, moduleId:{Type:"String",Required:true,Immutable:true,MaxLength:32},
+      asset:{Type:"String",Required:true,Immutable:true,MaxLength:64}, sig:{Type:"String",MaxLength:120} },
+    SortKeys:[{ID:"byTo",Components:[{Field:"toNo"},{Field:"createdAt",Descending:true}]}],
+    Access:{Read:[{Mode:"Authenticated"}],Create:[{Mode:"Authenticated"}],Update:[{Mode:"Owner"}],Delete:[{Mode:"Owner"}]},
+    Limits:{MaxItemsPerOwner:30,MaxItemBytes:512,TtlSeconds:2592000} },
 });
 const boards = (p) => {
   const names = {stand_z1:["Стенд обходчиков","мс","BestTime"],stand_z2:["Крышный пробег","мс","BestTime"],stand_z3:["Траверса теплиц","мс","BestTime"],
@@ -42,7 +60,8 @@ const boards = (p) => {
   return o;
 };
 const dc = { Enabled:true, Roles:{moderator:{DisplayName:"Модератор Совета",Description:"Может удалять письма курьеров"}},
-  Collections:{ ...col("kz_",false), ...col("dev_",true) } };
+  // the plan allows 10 collections: the test twin keeps only what the module-NFT tests need (letters/reads are covered on kz_)
+  Collections:{ ...col("kz_",false), ...Object.fromEntries(Object.entries(col("dev_",true)).filter(([k]) => !/letters|reads/.test(k))) } };
 const lb = { Definitions:{ ...boards("kz_"), ...boards("dev_") } };
 fs.writeFileSync("scripts/_dc.json", JSON.stringify(dc)); fs.writeFileSync("scripts/_lb.json", JSON.stringify(lb));
 console.log(fs.statSync("scripts/_dc.json").size, fs.statSync("scripts/_lb.json").size);

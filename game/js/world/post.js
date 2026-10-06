@@ -118,7 +118,7 @@ class TravelMenu{
     this.from=from;const items=[];
     if(gs.flags.post_on){const n=PostNet.undelivered(gs);if(PostNet.letter(gs))items.push({k:'letter'});if(n)items.push({k:'send',n});}
     /* письма других курьеров: их оставляют на станциях, читают тут же; марка уходит на письмо, приходит за чтение */
-    if(Chain.on&&Chain.me&&STATIONS[from]){items.push({k:'cwrite'});items.push({k:'cread'});}
+    if(Chain.on&&Chain.me&&STATIONS[from]){items.push({k:'cwrite'});items.push({k:'cread'});items.push({k:'depot'});}
     for(const k of STATION_ORDER)if(k!==from&&gs.flags['st_'+k])items.push({k:'go',st:k});
     this.list=items;
     if(!this.list.length){g.hud.say('ЕХАТЬ ПОКА НЕКУДА. ДРУГИЕ СТАНЦИИ — В ХАБАХ ЗОН: ОТКРОЮ ИХ ЛЮКИ, И МЕЖДУ НИМИ МОЖНО ЕЗДИТЬ.','ПНЕВМОПОЧТА');return;}
@@ -132,6 +132,7 @@ class TravelMenu{
     this.list.forEach((it,i)=>{const on=i===this.sel?' on':'';
       if(it.k==='letter')h+='<div class="tv-i tv-m'+on+'"><b>ПИСЬМО ОТ ПОЧТМЕЙСТЕРА</b><span>ПРОЧИТАТЬ</span></div>';
       else if(it.k==='cwrite')h+='<div class="tv-i tv-m'+on+'"><b>ОСТАВИТЬ ПИСЬМО КУРЬЕРАМ</b><span>МАРОК '+(Chain.me?Chain.me.stamps:0)+'</span></div>';
+      else if(it.k==='depot')h+='<div class="tv-i tv-m'+on+'"><b>ПОСЫЛКИ И СКЛАД</b><span>МОДУЛИ</span></div>';
       else if(it.k==='cread')h+='<div class="tv-i tv-m'+on+'"><b>ПИСЬМА КУРЬЕРОВ</b><span>ПРОЧИТАТЬ</span></div>';
       else if(it.k==='send')h+='<div class="tv-i tv-m'+on+'"><b>ОТПРАВИТЬ ЦИЛИНДРЫ</b><span>'+it.n+'</span></div>';
       else{const s=STATIONS[it.st];h+='<div class="tv-i'+on+'"><b>'+s.name+'</b><span>'+s.zone+'</span></div>';}});
@@ -149,6 +150,7 @@ class TravelMenu{
   go(it){
     const g=this.game;if(!it)return;
     if(it.k==='cwrite'){Chain.writeLetter(g,this.from);return;}
+    if(it.k==='depot'){this.close();Chain.openBook('depot');return;}
     if(it.k==='cread'){Chain.readLetters(g,this.from,this.at);return;}
     if(it.k==='letter'||it.k==='send'){this.close();const sc=PostNet.visit(g,this.at.x,this.at.y,it.k);if(sc)g.cinematic.play(sc);return;}
     const k=it.st,s=STATIONS[k];if(!s)return;

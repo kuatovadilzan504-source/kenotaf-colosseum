@@ -104,6 +104,7 @@ class Game{
     this.buildMenuScene();
   }
   begin(room,x,y){
+    setTimeout(()=>Chain.applyMods(),400);
     document.getElementById('menu').classList.add('hidden');
     document.getElementById('controls').classList.add('hidden');
     const ec=document.getElementById('endcard');ec.classList.remove('on');ec.style.opacity='';

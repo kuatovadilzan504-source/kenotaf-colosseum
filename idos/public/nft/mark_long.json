@@ -1,0 +1,26 @@
+{
+  "name": "ЖИРНЫЙ МЕЛ",
+  "symbol": "KZMOD",
+  "description": "СЛЕД РЫВКА НА ДЕТАЛИ ДЕРЖИТСЯ ПОЧТИ ВДВОЕ ДОЛЬШЕ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
+  "image": "https://xv979cyc.idos.games/nft/mark_long.svg",
+  "external_url": "https://xv979cyc.idos.games/",
+  "attributes": [
+    {
+      "trait_type": "Module",
+      "value": "mark_long"
+    },
+    {
+      "trait_type": "Game",
+      "value": "КЕНОТАФ"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://xv979cyc.idos.games/nft/mark_long.svg",
+        "type": "image/svg+xml"
+      }
+    ]
+  }
+}

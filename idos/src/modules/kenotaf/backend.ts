@@ -9,7 +9,7 @@ import { getKz, patchMe, type Courier } from "./store";
 type Client = IDosGamesClient;
 type Json = Record<string, unknown>;
 
-const safe = (s: string): string => s.replace(/[^A-Za-z0-9_-]/g, "_");
+export const safe = (s: string): string => s.replace(/[^A-Za-z0-9_-]/g, "_");
 const short = (a: string): string => (a.length > 10 ? `${a.slice(0, 4)}…${a.slice(-4)}` : a);
 
 export function walletOf(client: Client): string | null {
@@ -40,6 +40,21 @@ function applyEconomy(resp: unknown): void {
   if (delta && me) patchMe({ stamps: Math.max(0, me.stamps + delta) });
 }
 
+/**
+ * The number is the key of the courier's own record (`c<no>`): the first to write it owns it, so two
+ * couriers who took the oath at the same moment cannot end up with one number — the loser moves on.
+ */
+async function claimNumber(client: Client, start: number, wallet: string | null): Promise<number> {
+  const mine = await client.dataCollections.query(COL.couriers, { Owner: "me", Limit: 1 });
+  const had = mine.ok ? (mine.data.Items as DataItemView[])[0] : undefined;
+  if (had) return Number((had.Data as Json).no) || start;
+  for (let n = start; n < start + 12; n++) {
+    const r = await client.dataCollections.create(COL.couriers, { no: n, wallet: wallet ?? "" }, { itemID: `c${n}` });
+    if (r.ok && !r.data.AlreadyExists) return n;
+  }
+  return start;
+}
+
 /** The oath: the courier gets a number once, by the Council's own counter. */
 export async function openSession(client: Client): Promise<Courier> {
   const userId = client.auth.context?.userID ?? "";
@@ -50,10 +65,11 @@ export async function openSession(client: Client): Promise<Courier> {
   let no = ucd.ok ? Number(ucd.data.Public?.courier_no?.Value ?? 0) : 0;
   if (no > 0) {
     void client.dataCollections.create(COL.ledger, oath, { itemID: oathId });
+    void client.dataCollections.create(COL.couriers, { no, wallet: wallet ?? "" }, { itemID: `c${no}` });
   } else {
     await client.dataCollections.create(COL.ledger, oath, { itemID: oathId });
     const c = await client.dataCollections.getCounter(COL.ledger, "byKey", "oath");
-    no = c.ok ? Number(c.data.Value) || 1 : 1;
+    no = await claimNumber(client, c.ok ? Number(c.data.Value) || 1 : 1, wallet);
     await client.userCustomData.setPublicData("courier_no", String(no));
   }
   return { no, userId, wallet, name: `Курьер №${no}`, stamps: stampsOf(client), guest: !wallet };
@@ -63,7 +79,7 @@ export async function openSession(client: Client): Promise<Courier> {
 export async function record(
   client: Client,
   me: Courier,
-  kind: "read" | "guard" | "stand" | "exam" | "end",
+  kind: "read" | "guard" | "stand" | "exam" | "end" | "mint" | "mail",
   ref: string,
   n?: number,
 ): Promise<{ isNew: boolean; count: number }> {

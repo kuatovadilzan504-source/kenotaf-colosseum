@@ -1,0 +1,26 @@
+{
+  "name": "ЗУБИЛО ЧАСОВЩИКА",
+  "symbol": "KZMOD",
+  "description": "СОРВАННЫЙ ЗАМАХ ДЕРЖИТ МЕХАНИЗМ ОТКРЫТЫМ ДОЛЬШЕ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
+  "image": "https://xv979cyc.idos.games/nft/stun_long.svg",
+  "external_url": "https://xv979cyc.idos.games/",
+  "attributes": [
+    {
+      "trait_type": "Module",
+      "value": "stun_long"
+    },
+    {
+      "trait_type": "Game",
+      "value": "КЕНОТАФ"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://xv979cyc.idos.games/nft/stun_long.svg",
+        "type": "image/svg+xml"
+      }
+    ]
+  }
+}

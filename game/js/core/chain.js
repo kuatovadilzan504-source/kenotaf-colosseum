@@ -22,7 +22,18 @@ const Chain=(()=>{
   C.paint=()=>{const m=C.me,txt=m?'КУРЬЕР №'+m.no+(m.wallet?'   '+m.short:'   ГОСТЬ')+'   МАРОК '+m.stamps:'';
     for(const id of ['courier','courierP']){const el=document.getElementById(id);if(el){el.textContent=txt;el.classList.toggle('hidden',!m);}}
     for(const id of ['btnBookMenu','btnBook']){const el=document.getElementById(id);if(el)el.classList.toggle('hidden',!m);}};
-  C.openBook=()=>C.emit('ui',{what:'book'});
+  C.openBook=what=>C.emit('ui',{what:what||'book'});
+  /* модули ранца как активы Solana: хост присылает, какие из них держит кошелёк курьера.
+     Они появляются в ранце (даже если курьер их ещё не находил — их прислали по почте), а ушедшие по почте — исчезают. */
+  C.bound={};C.mods=null;
+  C.applyMods=()=>{const d=C.mods,g=C.game;if(!d)return;C.bound={};for(const k of d.own||[])C.bound[k]=1;
+    if(!g||!g.gs||(typeof CouncilExam!=='undefined'&&CouncilExam.on)||g.state==='menu'||g.state==='intro')return;
+    const gs=g.gs,said=[];
+    for(const k of d.own||[]){if(MODULE_IDS.indexOf(k)<0||gs.flags[k])continue;gs.flag(k);
+      if(gs.equip.length<gs.slots()&&gs.equip.indexOf(k)<0)gs.equip.push(k);said.push('В РАНЦЕ МОДУЛЬ «'+UPGRADES[k].name+'»: ЕГО ДЕРЖИТ ТВОЙ КОШЕЛЁК.');}
+    for(const k of d.lost||[]){if(!gs.flags[k])continue;delete gs.flags[k];const i=gs.equip.indexOf(k);if(i>=0)gs.equip.splice(i,1);
+      said.push('МОДУЛЬ «'+UPGRADES[k].name+'» УШЁЛ ПО ПОЧТЕ. ИЗ РАНЦА ОН ПРОПАЛ.');}
+    if(said.length){gs.save();said.forEach(t=>g.hud.say(t,'КОШЕЛЁК'));}};
   /* письмо курьерам: хост рисует окно (там предупреждение о модерации) и сам списывает марку */
   C.writeLetter=async(g,station)=>{
     const r=await C.ask('write',{station},10*60*1000);
@@ -43,6 +54,7 @@ const Chain=(()=>{
     const d=e.data;if(!d||d.kz!==1||e.origin!==location.origin||e.source!==parent)return;
     if(d.reply){const f=C.pending[d.reply];if(f){delete C.pending[d.reply];f(d);}return;}
     if(d.t==='session'){C.me=d.me;C.paint();}
+    else if(d.t==='modules'){C.mods=d;C.applyMods();}
     else if(d.t==='toast'&&C.game&&C.game.hud&&d.text)C.game.hud.say(String(d.text).slice(0,160),'КНИГА УЧЁТА');});
   addEventListener('DOMContentLoaded',()=>C.emit('hello'));
   return C;

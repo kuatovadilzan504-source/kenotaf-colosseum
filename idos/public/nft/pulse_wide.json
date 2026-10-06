@@ -1,0 +1,26 @@
+{
+  "name": "ШИРОКОЕ СОПЛО",
+  "symbol": "KZMOD",
+  "description": "ИМПУЛЬС БЬЁТ ВЕЕРОМ: ВДВОЕ ВЫШЕ И НИЖЕ. ЕСТ ВДВОЕ БОЛЬШЕ ДАВЛЕНИЯ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
+  "image": "https://xv979cyc.idos.games/nft/pulse_wide.svg",
+  "external_url": "https://xv979cyc.idos.games/",
+  "attributes": [
+    {
+      "trait_type": "Module",
+      "value": "pulse_wide"
+    },
+    {
+      "trait_type": "Game",
+      "value": "КЕНОТАФ"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://xv979cyc.idos.games/nft/pulse_wide.svg",
+        "type": "image/svg+xml"
+      }
+    ]
+  }
+}

@@ -52,6 +52,7 @@ const PLATE_UP={name:'ПЛАСТИНА КУРТКИ',desc:'ДВЕ ПЛАСТИН
 function grantUpgrade(g,u){
   if(!UPGRADES[u]&&u.indexOf('plate_')===0)UPGRADES[u]=PLATE_UP;
   g.gs.flag(u);g.audio.pickup();g.flash(0.3);
+  if(MODULE_IDS.indexOf(u)>=0)Chain.emit('module',{id:u});
   /* модуль: есть свободное гнездо — надевается сразу; нет — лежит в ранце до паузы */
   if(MODULE_IDS.indexOf(u)>=0){const gs=g.gs;
     if(gs.equip.length<gs.slots()&&gs.equip.indexOf(u)<0){gs.equip.push(u);gs.save();}

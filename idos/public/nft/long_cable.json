@@ -1,0 +1,26 @@
+{
+  "name": "ДЛИННЫЙ ТРОС",
+  "symbol": "KZMOD",
+  "description": "ГАРПУН ДОСТАЁТ НА ТРЕТЬ ДАЛЬШЕ. ЛЕБЁДКА ТЯНЕТ МЕДЛЕННЕЕ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
+  "image": "https://xv979cyc.idos.games/nft/long_cable.svg",
+  "external_url": "https://xv979cyc.idos.games/",
+  "attributes": [
+    {
+      "trait_type": "Module",
+      "value": "long_cable"
+    },
+    {
+      "trait_type": "Game",
+      "value": "КЕНОТАФ"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://xv979cyc.idos.games/nft/long_cable.svg",
+        "type": "image/svg+xml"
+      }
+    ]
+  }
+}

@@ -9,6 +9,9 @@ export const COL = {
   ledger: `${NS}ledger`,
   letters: `${NS}letters`,
   reads: `${NS}reads`,
+  couriers: `${NS}couriers`,
+  assets: `${NS}assets`,
+  parcels: `${NS}parcels`,
 } as const;
 
 export const board = (id: string): string => `${NS}${id}`;
@@ -56,3 +59,19 @@ export const LORE_TOTAL = 30;
 export const ENDING_NAMES: Record<string, string> = { door: "Дверь", truth: "Правда" };
 
 export const LETTER_MAX = 140;
+
+/** The twelve backpack modules of the game (js/world/systems.js MODULE_IDS), in the game's order. */
+export const MODULES: Record<string, string> = {
+  mark_long: 'ЖИРНЫЙ МЕЛ',
+  heavy_fast: 'ТЯЖЁЛАЯ РУКОЯТЬ',
+  stun_long: 'ЗУБИЛО ЧАСОВЩИКА',
+  evade_win: 'ГИРОСКОП ОБХОДЧИКА',
+  scrap_magnet: 'МАГНИТ ЛОМА',
+  pulse_wide: 'ШИРОКОЕ СОПЛО',
+  weld_parry: 'ОТРАЖАТЕЛЬ',
+  felt_soles: 'ВОЙЛОЧНЫЕ ПОДОШВЫ',
+  long_cable: 'ДЛИННЫЙ ТРОС',
+  ram_valve: 'ТАРАННЫЙ КЛАПАН',
+  cold_core: 'ХОЛОДНЫЙ КОТЁЛ',
+  vent_burst: 'СБРОСНОЙ КЛАПАН',
+};

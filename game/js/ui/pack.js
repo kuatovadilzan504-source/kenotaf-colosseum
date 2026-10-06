@@ -15,7 +15,7 @@ class PackUI{
     list.innerHTML='';this.ids=[];
     for(const k of MODULE_IDS){const has=own.indexOf(k)>=0;
       const b=document.createElement('div');b.className='btn arc'+(has?'':' dim')+(gs.equip.indexOf(k)>=0?' worn':'');
-      b.textContent=has?((gs.equip.indexOf(k)>=0?'● ':'○ ')+UPGRADES[k].name):'—';
+      b.textContent=has?((gs.equip.indexOf(k)>=0?'● ':'○ ')+UPGRADES[k].name+(Chain.bound[k]?' ◆':'')):'—';
       if(has){b.dataset.pack=String(this.ids.length);this.ids.push(k);b.onclick=()=>this.toggle(+b.dataset.pack);}
       list.appendChild(b);}
     document.getElementById('packInfo').textContent='ГНЁЗДА '+gs.equip.length+' / '+gs.slots();

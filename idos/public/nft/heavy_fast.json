@@ -1,0 +1,26 @@
+{
+  "name": "ТЯЖЁЛАЯ РУКОЯТЬ",
+  "symbol": "KZMOD",
+  "description": "ЗАРЯЖЕННЫЙ УДАР КОПИТСЯ ПОЧТИ ВДВОЕ БЫСТРЕЕ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
+  "image": "https://xv979cyc.idos.games/nft/heavy_fast.svg",
+  "external_url": "https://xv979cyc.idos.games/",
+  "attributes": [
+    {
+      "trait_type": "Module",
+      "value": "heavy_fast"
+    },
+    {
+      "trait_type": "Game",
+      "value": "КЕНОТАФ"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://xv979cyc.idos.games/nft/heavy_fast.svg",
+        "type": "image/svg+xml"
+      }
+    ]
+  }
+}

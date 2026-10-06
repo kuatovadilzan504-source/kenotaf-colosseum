@@ -1,13 +1,17 @@
 // Seals a fake ledger on Solana devnet with a throwaway keypair and reads the memo back from the chain.
+import fs from "node:fs";
 import { Connection, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { digestOf, memoText, parseMemo, readMemo, sendMemo } from "../src/modules/kenotaf/chainlib.ts";
 
 const c = new Connection("https://api.devnet.solana.com", "confirmed");
-const kp = Keypair.generate();
+// KZ_TEST_KEY=<json secret key with devnet SOL>; without it a fresh key is funded from the (often dry) public faucet
+const kp = process.env.KZ_TEST_KEY ? Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync(process.env.KZ_TEST_KEY, "utf8")))) : Keypair.generate();
 console.log("wallet", kp.publicKey.toBase58());
-const sig0 = await c.requestAirdrop(kp.publicKey, LAMPORTS_PER_SOL / 10);
-const bh = await c.getLatestBlockhash();
-await c.confirmTransaction({ signature: sig0, ...bh }, "confirmed");
+if (!process.env.KZ_TEST_KEY) {
+  const sig0 = await c.requestAirdrop(kp.publicKey, LAMPORTS_PER_SOL / 10);
+  const bh = await c.getLatestBlockhash();
+  await c.confirmTransaction({ signature: sig0, ...bh }, "confirmed");
+}
 console.log("balance", (await c.getBalance(kp.publicKey)) / LAMPORTS_PER_SOL);
 
 const keys = ["oath", "read:1", "read:5", "guard:primarch", "end:truth"];

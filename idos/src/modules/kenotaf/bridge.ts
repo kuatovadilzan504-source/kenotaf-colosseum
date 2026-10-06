@@ -1,6 +1,8 @@
 import type { IDosGamesClient } from "@idosgames/core";
 import * as be from "./backend";
+import { incomingParcels, syncDepot } from "./depot";
 import { ENDING_NAMES, GUARD_NAMES, STANDS, STATION_NAMES } from "./ids";
+import { MODULES } from "./ids";
 import { getKz, setKz, subscribeKz, type Courier } from "./store";
 
 // The game (an iframe of the same origin) tells the host what the courier did; the host enters it in
@@ -37,6 +39,18 @@ export function createBridge(client: IDosGamesClient): Bridge {
     send({ t: "session", me: { no: c.no, wallet: c.wallet, short: c.wallet ? be.shortWallet(c.wallet) : "", stamps: c.stamps } });
   };
 
+  /** What the courier's wallet holds, as the game must honour it: owned modules appear, lost ones go. */
+  const pushModules = (): void => {
+    const d = getKz().depot;
+    if (d) send({ t: "modules", own: d.own, lost: d.lost });
+  };
+  const refreshModules = async (): Promise<void> => {
+    const c = me();
+    if (!c?.wallet) return;
+    await syncDepot(client, c);
+    pushModules();
+  };
+
   const scheduleSave = (): void => {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => void be.pushSave(client), 15_000);
@@ -47,12 +61,27 @@ export function createBridge(client: IDosGamesClient): Bridge {
     switch (m.t) {
       case "hello":
         push();
+        void refreshModules()
+          .then(async () => {
+            const p = c?.wallet ? await incomingParcels(client, c) : [];
+            if (p.length) toast(`ПОСЫЛКА ДЛЯ ТЕБЯ: ${p.length}. ПНЕВМОПОЧТА, «ПОСЫЛКИ И СКЛАД»`);
+          })
+          .catch((e) => console.warn("[kenotaf] modules", e));
         return;
       case "save":
         scheduleSave();
         return;
       case "ui":
-        if (m.what === "book") setKz({ book: true });
+        if (m.what === "book" || m.what === "depot") setKz({ book: true, bookTab: m.what === "depot" ? "depot" : null });
+        return;
+      case "module": {
+        const id = String(m.id);
+        if (c?.wallet && MODULES[id] && !getKz().depot?.own.includes(id))
+          toast(`НАЙДЕН МОДУЛЬ «${MODULES[id]}». ЕГО МОЖНО ЗАПИСАТЬ В КОШЕЛЁК: ПНЕВМОПОЧТА, «ПОСЫЛКИ И СКЛАД»`);
+        return;
+      }
+      case "modulesChanged":
+        pushModules();
         return;
       case "lore": {
         if (!c) return;
@@ -138,7 +167,10 @@ export function createBridge(client: IDosGamesClient): Bridge {
       frame = f;
       window.addEventListener("message", onMessage);
       // the game sees every change of the courier's numbers (stamps) at once
-      unsub = subscribeKz(push);
+      unsub = subscribeKz(() => {
+        push();
+        pushModules();
+      });
     },
     dispose() {
       window.removeEventListener("message", onMessage);

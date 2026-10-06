@@ -1,6 +1,9 @@
 import { Connection, PublicKey, LAMPORTS_PER_SOL, type Transaction } from "@solana/web3.js";
 import { isEmbeddedInPlatform } from "@idosgames/wallet";
 import { DEVNET_RPC } from "./ids";
+import { publicKey as umiKey, type Signer } from "@metaplex-foundation/umi";
+import { fromWeb3JsTransaction, toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
+import { makeUmi, mintModule, readUmi, sendModule } from "./modulenft";
 import { digestOf, memoText, sendMemo } from "./chainlib";
 
 // The courier's own wallet extension (Phantom, Solflare, Backpack) — used to sign the seal.
@@ -59,3 +62,37 @@ export async function seal(keys: string[], no: number, expectWallet: string | nu
   const memo = memoText({ app: "kenotaf", v: 1, c: no, n: keys.length, h });
   return sendMemo(connection(), new PublicKey(address), (tx) => provider.signTransaction(tx), memo);
 }
+
+/** The courier's extension as an umi signer: transactions go to the wallet as it expects them (versioned). */
+export function umiSignerOf(provider: Injected, address: string): Signer {
+  const sign = async (tx: Parameters<typeof toWeb3JsTransaction>[0]) =>
+    fromWeb3JsTransaction((await (provider.signTransaction as unknown as (t: unknown) => Promise<never>)(toWeb3JsTransaction(tx))) as never);
+  return {
+    publicKey: umiKey(address),
+    signMessage: async (m) => {
+      if (!provider.signMessage) throw new Error('This wallet cannot sign messages.');
+      const r = await provider.signMessage(m, 'utf8');
+      return r instanceof Uint8Array ? r : r.signature;
+    },
+    signTransaction: sign,
+    signAllTransactions: async (txs) => Promise.all(txs.map(sign)),
+  };
+}
+
+async function signerUmi(expectWallet: string | null) {
+  const { provider, address } = await connectWallet();
+  if (expectWallet && expectWallet !== address) throw new Error(`WRONG_WALLET:${expectWallet}`);
+  return makeUmi(DEVNET_RPC, umiSignerOf(provider, address));
+}
+
+/** Writes a found module into the courier's wallet as a Core asset; returns its address and the transaction. */
+export async function mintToWallet(moduleId: string, name: string, no: number, expectWallet: string | null) {
+  return mintModule(await signerUmi(expectWallet), moduleId, name, no);
+}
+
+/** Mails a module: the Core asset moves to the other courier's wallet. */
+export async function mailToWallet(asset: string, toWallet: string, expectWallet: string | null): Promise<string> {
+  return sendModule(await signerUmi(expectWallet), asset, toWallet);
+}
+
+export const chainReader = () => readUmi(DEVNET_RPC);

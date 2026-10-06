@@ -1,0 +1,26 @@
+{
+  "name": "ТАРАННЫЙ КЛАПАН",
+  "symbol": "KZMOD",
+  "description": "РЫВОК СКВОЗЬ МЕХАНИЗМ БЬЁТ ЕГО УЗЕЛ. КЛАПАН ПЕРЕЗАРЯЖАЕТСЯ ДОЛЬШЕ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
+  "image": "https://xv979cyc.idos.games/nft/ram_valve.svg",
+  "external_url": "https://xv979cyc.idos.games/",
+  "attributes": [
+    {
+      "trait_type": "Module",
+      "value": "ram_valve"
+    },
+    {
+      "trait_type": "Game",
+      "value": "КЕНОТАФ"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://xv979cyc.idos.games/nft/ram_valve.svg",
+        "type": "image/svg+xml"
+      }
+    ]
+  }
+}
