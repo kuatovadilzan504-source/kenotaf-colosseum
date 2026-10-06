@@ -57,6 +57,7 @@ class TrialSystem{
   finish(W,bell){const g=this.game,gs=g.gs,r=this.run,t=r.t,id=this.id,T=this.T;this.run=null;
     gs.trials=gs.trials||{};const old=gs.trials[id]||{},best=old.best===undefined||t<old.best;
     gs.trials[id]={best:best?t:old.best,runs:(old.runs||0)+1};gs.save();
+    Chain.emit('stand',{id,ms:Math.round(t*1000),par:t<=T.par});
     if(best){r.rec.push(this.frame(W.player));this.ghost={t,f:r.rec};this.saveGhost(id,this.ghost);}
     g.audio.bell?g.audio.bell():g.audio.tone(1046,1.2,'sine',0.05,0,g.audio.verb);g.camera.addShake(0.25);
     g.particles.spawn({kind:'ring',x:bell.x,y:bell.y-1.6,ringR:2.6,life:0.6,size:0.1,col:'#ffe6a3',add:true,a:0.9});

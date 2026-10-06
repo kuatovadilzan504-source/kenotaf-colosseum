@@ -35,7 +35,7 @@ const SaveSystem={
   sum(str){let h=0;for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))|0;return h;},
   write(gs){try{const d=JSON.stringify(gs.serialize()),rec=JSON.stringify({v:3,t:Date.now(),c:this.sum(d),d:d});
     const cur=localStorage.getItem(this.KEY);if(cur&&cur!==rec)localStorage.setItem(this.BAK,cur);
-    localStorage.setItem(this.KEY,rec);}catch(e){}},
+    localStorage.setItem(this.KEY,rec);Chain.emit('save');}catch(e){}},
   parse(raw){if(!raw)return null;try{const r=JSON.parse(raw);
     if(r&&r.v===3&&typeof r.d==='string'){if(this.sum(r.d)!==r.c)return null;return this.fix(JSON.parse(r.d));}
     if(r&&r.cp)return this.fix(r);   /* старый формат: сам объект состояния */

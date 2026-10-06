@@ -25,7 +25,7 @@ class Game{
     this.tutorial=new TutorialSystem(this);
     this.map=new WorldMap(this);
     this.travel=new TravelMenu(this);
-    this.menuNav=new MenuNav(this);
+    this.menuNav=new MenuNav(this);Chain.game=this;
     this.state='menu';this.timeScale=1;this.hitstopT=0;this.acc=0;this.last=0;this.fps=60;this.slowT=0;this.slowK=1;
     this.transitionT=-1;this.transitionCb=null;this.vw=0;this.vh=0;this.ppm=40;this.bakePpm=40;
     this.menuT=0;this.menuRoom=null;this.menuPar=null;
@@ -66,6 +66,7 @@ class Game{
     $('btnPauseSet').onclick=()=>this.settingsUI.open('pause');
     $('btnArchive').onclick=()=>this.archiveUI.open();
     $('btnPack').onclick=()=>this.packUI.open();
+    $('btnBook').onclick=()=>Chain.openBook();$('btnBookMenu').onclick=()=>Chain.openBook();Chain.paint();
     $('btnResume').onclick=()=>this.togglePause();
     /* страховка от застревания: вернуться к точке входа в зал (не в бою с боссом и не на арене) */
     $('btnUnstuck').onclick=()=>{if($('btnUnstuck').classList.contains('dim'))return;this.togglePause();this.world.unstuck();};
@@ -203,6 +204,7 @@ class Game{
     this.state='ending';this.input.enabled=false;this.input.clearAll();this.endReady=false;
     /* B — правда сказана всем ярусам (вещательный массив); A — курьер вышел один */
     const F=this.gs.flags,b=!!F.broadcast_done;
+    Chain.emit('ending',{kind:b?'truth':'door',lore:this.gs.lore||0});
     /* то, что сцена уже сказала (трава, лист, «он прочитал»), здесь не повторяется */
     const lines=['МИР НЕ КОНЧИЛСЯ. ПЕЧАТЬ БЫЛА НЕ ЩИТОМ, А ЗАМКОМ.'];
     if(b)lines.push('ГОЛОСА С ЦИЛИНДРОВ ИДУТ ПО ВСЕМ ЯРУСАМ.','ВНИЗУ ОТКРЫВАЮТ ГЕРМОДВЕРИ — НЕ ПО ПРИКАЗУ.',

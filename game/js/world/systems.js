@@ -155,7 +155,7 @@ class SalvageSystem{
   /* цилиндр — фонограмма: игла, шорох и далёкий голос; текст — субтитрами (если включены) и в архиве */
   lore(def){const g=this.game,gs=g.gs,L=LORE[def.loreId]||{};
     if(gs.loreIds[def.loreId]){g.hud.say('ЦИЛИНДР УЖЕ ИЗВЛЕЧЁН','');return;}
-    gs.loreIds[def.loreId]=true;gs.lore=Object.keys(gs.loreIds).length;gs.save();
+    gs.loreIds[def.loreId]=true;gs.lore=Object.keys(gs.loreIds).length;gs.save();Chain.emit('lore',{id:def.loreId,total:gs.lore});
     const text=def.text||L.text||'',title=(L.title||def.title||'').replace(/^ЦИЛИНДР №\d+ · /,'');
     g.audio.lore();g.audio.phono(clamp(text.length*0.055,3,9));
     if(Settings.get('subs'))g.hud.showLore(text,title);

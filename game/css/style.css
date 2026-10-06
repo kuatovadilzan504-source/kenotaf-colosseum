@@ -272,3 +272,7 @@ kbd.kc{min-width:30px;height:30px;padding:0 8px;display:inline-grid;place-items:
 /* имя — сразу, кто он — следом, его фраза — после паузы: глаз читает по одной строке */
 @keyframes btPart{0%,12%{opacity:0}26%{opacity:1}100%{opacity:1}}
 @keyframes btLine{0%,30%{opacity:0;transform:translateY(4px)}44%{opacity:1;transform:none}100%{opacity:1}}
+
+/* Книга учёта: чип курьера (номер, кошелёк, марки) в меню и паузе */
+.courier{font-size:12px;letter-spacing:.34em;color:#c9a227;margin:-26px 0 30px;text-transform:uppercase;white-space:pre}
+#pause .courier{margin:2px 0 10px;font-size:11px;color:#a8924c}

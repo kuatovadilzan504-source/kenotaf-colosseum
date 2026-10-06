@@ -41,10 +41,12 @@
   </div>
   <div id="menu" class="screen"><div class="wrap">
     <h1><span class="g">КЕНОТАФ</span></h1>
+    <div id="courier" class="courier hidden"></div>
     <div class="btns">
       <div class="btn" id="btnStart">НАЧАТЬ</div>
       <div class="btn" id="btnContinue">ПРОДОЛЖИТЬ</div>
       <div class="btn hidden" id="btnExam">ЭКЗАМЕН СОВЕТА</div>
+      <div class="btn hidden" id="btnBookMenu">КНИГА УЧЁТА</div>
       <div class="btn" id="btnCtrls">УПРАВЛЕНИЕ</div>
       <div class="btn" id="btnSettings">НАСТРОЙКИ</div>
     </div>
@@ -64,7 +66,7 @@
     <div class="btns"><div class="btn" id="btnSetBack">НАЗАД</div></div>
   </div></div>
   <div id="pause" class="screen hidden"><div class="panel wide">
-    <h2>ПАУЗА</h2><div class="hint" id="pauseInfo">ОТСТОЙНИК</div>
+    <h2>ПАУЗА</h2><div class="hint" id="pauseInfo">ОТСТОЙНИК</div><div id="courierP" class="courier hidden"></div>
     <div class="pausegrid">
       <div class="mapbox"><canvas id="mapcv"></canvas>
         <div class="maplegend"><span><i class="lg-cp"></i>ФОНАРЬ</span><span><i class="lg-st"></i>ПНЕВМОПОЧТА</span>
@@ -75,6 +77,7 @@
           <div class="btn" id="btnResume">ПРОДОЛЖИТЬ</div>
           <div class="btn" id="btnArchive">ЗАПИСИ</div>
           <div class="btn" id="btnPack">РАНЕЦ</div>
+          <div class="btn hidden" id="btnBook">КНИГА УЧЁТА</div>
           <div class="btn" id="btnUnstuck">ВЫБРАТЬСЯ К ВХОДУ</div>
           <div class="btn" id="btnPauseSet">НАСТРОЙКИ</div>
           <div class="btn" id="btnToMenu">В ГЛАВНОЕ МЕНЮ</div>
@@ -114,6 +117,7 @@
 <script src="js/render/particles.js"></script>
 <script src="js/render/camera.js"></script>
 <script src="js/core/physics.js"></script>
+<script src="js/core/chain.js"></script>
 <script src="js/core/state.js"></script>
 <script src="js/world/systems.js"></script>
 <script src="js/render/renderer.js"></script>

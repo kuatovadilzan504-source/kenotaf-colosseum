@@ -40,6 +40,7 @@ const CouncilExam={
   /* упал — экзамен не сдан */
   fail(){if(!this.on)return;this.done=true;this.card(false);},
   finish(){this.done=true;const r=this.rec(),first=!r.done,best=r.best===undefined||this.t<r.best;
+    Chain.emit('exam',{ms:Math.round(this.t*1000)});
     this.saveRec({done:true,best:best?this.t:r.best,runs:(r.runs||0)+1});this.card(true,first,best);},
   card(ok,first,best){const g=this.game;g.state='ending';g.input.enabled=false;g.input.clearAll();this.hide();
     const el=document.getElementById('endcard'),c=el.querySelector('.c'),r=this.rec();

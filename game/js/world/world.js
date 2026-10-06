@@ -367,6 +367,7 @@ class World{
       else if(b.type==='uprooter'){g.gs.bosses.uprooter=true;g.gs.flag('boss3_dead');g.hud.say('КОРЧЕВАТЕЛЬ ЗАМЕР. САДЫ БОЛЬШЕ НЕКОМУ ПОЛОТЬ.','');}
       else if(b.type==='regulator'){g.gs.bosses.regulator=true;g.gs.flag('boss4_dead');g.hud.say('ЧАСЫ ВСТАЛИ.','');}
       else{g.gs.bosses.primarch=true;g.gs.flag('boss2_dead');g.gs.flag('turbines_on');}
+      Chain.guard(b.type);
       g.gs.save();g.audio.door();g.hud.bossOff();
       /* зал меняется сразу, на глазах: у Надсмотрщика — когда рушится перекрытие (ниже), у остальных — во вспышке взрыва */
       if(b.type!=='overseer')this.liveRebuild();
