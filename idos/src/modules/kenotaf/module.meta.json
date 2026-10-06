@@ -1,0 +1,9 @@
+{
+  "id": "kenotaf",
+  "type": "template",
+  "summary": "КЕНОТАФ — diesel-punk metroidvania on vanilla JS/Canvas, embedded unchanged.",
+  "provides": ["the full КЕНОТАФ game as a lobby mode"],
+  "tags": ["metroidvania", "canvas"],
+  "author": { "name": "Kuatov Adilzhan" },
+  "version": "0.1.0"
+}

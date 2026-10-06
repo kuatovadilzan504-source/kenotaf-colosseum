@@ -1,0 +1,1 @@
+export { kenotafModule } from "./module";

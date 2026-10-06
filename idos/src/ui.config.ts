@@ -1,0 +1,42 @@
+import { defineUiConfig } from "@idosgames/react/ui";
+
+// The game's interface in ONE place: colours, animations and sounds of every module built on
+// @idosgames/react/ui. КЕНОТАФ is dark brass and soot: readability first, nothing bouncing.
+export default defineUiConfig({
+  theme: {
+    bgTop: "#1b1610",
+    bgBottom: "#0a0806",
+    panel: "#1d1a14",
+    panelDeep: "#100e0a",
+    panelEdge: "#6d5416",
+    text: "#e6d9bd",
+    textDim: "#a09478",
+    gold: "#e8c96a",
+    goldDeep: "#8a6d1e",
+    green: "#6f9a4a",
+    greenDeep: "#41602a",
+    blue: "#a8842a",
+    blueDeep: "#6d5416",
+    red: "#b8452e",
+    redDeep: "#7a2c1c",
+    shadow: "rgba(0,0,0,.6)",
+    backdrop: "rgba(0,0,0,.72)",
+    onGreen: "#10140b",
+    onGold: "#1a1304",
+    onBlue: "#140f04",
+    onRed: "#fff3ea",
+    textOutline: "none",
+    line: "rgba(232,201,106,.18)",
+    well: "rgba(0,0,0,.4)",
+    wellSoft: "rgba(0,0,0,.28)",
+    wellShadow: "inset 0 1px 3px rgba(0,0,0,.6)",
+    edge: "#2e2410",
+    glow: "rgba(232,201,106,.06)",
+    panelShadow: "0 12px 40px rgba(0,0,0,.65)",
+    radius: 6,
+    buttonRadius: 3,
+    font: "'Oswald', 'Segoe UI', system-ui, sans-serif",
+  },
+  motion: { intensity: 0.4, rewardFlight: false, particles: false },
+  sound: { volume: 0.35 },
+});
