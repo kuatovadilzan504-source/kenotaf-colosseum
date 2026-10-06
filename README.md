@@ -2,7 +2,8 @@
 
 **A diesel-punk metroidvania where Solana is the Council's ledger.**
 You are a courier in an underground arcology whose Council forbids couriers to read the letters they carry. You read them anyway —
-and now your wallet is your account, every deed goes into a Book you can seal on-chain, and couriers leave letters for each other.
+and now your wallet is your account, every deed goes into a Book you can seal on-chain, couriers leave letters for each other —
+and the modules of your backpack are **Metaplex Core assets** that the game honours only while your wallet holds them, and that the pneumatic mail can carry to another courier.
 
 Reviewing? Start with [docs/JUDGES.md](docs/JUDGES.md).
 
@@ -27,12 +28,14 @@ bound to your wallet.
 | Choose an ending | "Door" or "Truth" is recorded; the *Council* tab shows how all couriers ended the game. |
 | Leave a letter at a pneumatic station | Other couriers find it there. Posting costs one **stamp** (a platform currency); every foreign letter you read pays one back. Moderators can delete letters and **ban** couriers — the dialog says so. |
 | Press *«Запечатать в Solana»* | One **Memo transaction on devnet**, signed by your wallet, with the SHA-256 digest of your Book keys. [`verify-seal.mjs`](idos/scripts/verify-seal.mjs) recomputes it from the public ledger. |
+| Find a backpack module | One of twelve. The **Depot** tab can write it into your wallet as a **Metaplex Core asset** (attributes: module, courier, game). From then on the game keeps it in your backpack only while the wallet holds it. |
+| Pneumatic mail → *«ПОСЫЛКИ И СКЛАД»* | Send a module to another courier by number: a plain Core **transfer** to their wallet, a parcel notice for them, and the module leaves your backpack and appears in theirs. The recipient's wallet is looked up in the courier registry. |
 | Close the tab | The save lives in the cloud under your account; the newer of cloud and local wins on the next device. |
 
 | | | |
 |---|---|---|
-| ![station](docs/img/station.jpg) | ![letter](docs/img/letter.jpg) | ![book](docs/img/book.jpg) |
-| Station menu | Letter dialog with the moderation warning | The Book of the Council |
+| ![station](docs/img/station.jpg) | ![letter](docs/img/letter.jpg) | ![book](docs/img/book-modules.jpg) |
+| Station menu | Letter dialog with the moderation warning | The Book: a module written to the wallet and mailed to courier №5, all sealed |
 
 ## How it works
 
@@ -41,11 +44,12 @@ bound to your wallet.
  │  host page (React, iDos Games SDK)          game (iframe, vanilla JS)
  │  ├ wallet sign-in                           ├ js/core/chain.js   ← the ONLY code that knows the host
  │  ├ module "kenotaf"  ◄── postMessage ─────► │ hooks: lore, guardian, stand, exam, ending, mail station
- │  │   bridge → Book, leaderboards, letters   └ works alone (file://): every Chain call is a no-op
- │  └ Book / letter dialogs, seal (Memo tx)
+ │  │   bridge → Book, leaderboards, letters,  └ works alone (file://): every Chain call is a no-op
+ │  │   modules (the game follows the wallet)
+ │  └ Book / Depot / letter dialogs, seal (Memo tx), mint & transfer (Core)
  └──────────────┬──────────────────────────────────┬───────────────┘
                 │ platform API                     │ Solana devnet RPC
-        iDos Games Title XV979CYC          Memo program (wallet-signed)
+        iDos Games Title XV979CYC          Memo + Metaplex Core (wallet-signed)
         data collections · leaderboards
         currency · custom data · bans
 ```
@@ -55,11 +59,17 @@ The platform side is **configuration, not code** — `idos/scripts/gen-config.mj
 - currency `Stamps` (start with 5);
 - collections `ledger` (one record per deed, counters per key), `letters` (140 chars, costs a stamp, word filter, owner/moderator delete)
   and `reads` (one per courier per letter, pays a stamp, counter per letter);
+- collections `couriers` (the key `c<no>` is the courier number, so a number is issued once and gives the wallet for mail), `assets` (which Core
+  asset is which module of which courier, counters per module) and `parcels` (notices for the recipient, expire in 30 days);
 - seven leaderboards (five test stands, the Council exam, cylinders read);
 - Private custom-data key for the cloud save, Public key for the courier number;
 - ban levels (`council` blocks login), the `moderator` role, the Solana devnet network.
 
-Two namespaces exist: `kz_` (players) and `dev_` (tests; owners may delete, so test scripts clean up after themselves).
+Two namespaces exist: `kz_` (players) and `dev_` (tests; owners may delete, so test scripts clean up after themselves). The platform plan allows ten
+collections, so `dev_` holds only the four the module tests need (letters and reads were tested earlier and are unchanged).
+
+**Who owns a module is read from Solana every time** (`fetchAsset`), not from the database: the platform stores only the index. The module's
+metadata and plate (`public/nft/<id>.json|svg`, generated from the game's own table by `scripts/gen-nft.mjs`) are served with the game.
 
 ## Run it
 
@@ -81,7 +91,8 @@ Tests (real backend, throwaway wallets, they clean up after themselves):
 cd idos
 node scripts/test-wallet-login.mjs     # Solana sign-in, no browser
 node scripts/test-backend.mjs          # Book, letters, stamps, blocked words, leaderboards, cloud save  → ALL OK
-node scripts/test-seal.ts              # Memo seal on devnet; needs ~0.1 devnet SOL on a fresh key
+node scripts/test-seal.ts              # Memo seal on devnet; needs ~0.1 devnet SOL on a fresh key (KZ_TEST_KEY=<json key>)
+node scripts/test-modules.ts           # Core mint → read attributes → transfer → ownership moved; KZ_TEST_KEY=<json key>, ~0.004 SOL
 node scripts/verify-seal.mjs 1         # recompute courier №1's digest (NS=dev_ for the test namespace)
 ```
 
@@ -93,7 +104,7 @@ node scripts/verify-seal.mjs 1         # recompute courier №1's digest (NS=dev
 game/                  the game (vanilla JS, 1.8 MB) — see "КЕНОТАФ (игра)" below
   js/core/chain.js     the bridge to the host (postMessage; no-ops when not embedded)
 idos/                  the iDos Games host
-  src/modules/kenotaf/ module.tsx (mounts the game), bridge.ts, backend.ts, chainlib.ts (Memo seal), wallet.ts, ui/
+  src/modules/kenotaf/ module.tsx (mounts the game), bridge.ts, backend.ts, depot.ts (modules, mail), modulenft.ts (Core), chainlib.ts (Memo seal), wallet.ts, ui/
   src/walletLogin.tsx  Solana sign-in
   scripts/             gen-config, smoke tests, verify-seal, zip packer
 docs/                  JUDGES.md, game design docs, screenshots
@@ -110,9 +121,15 @@ hooks in `game/js/` (`systems.js`, `world.js`, `trials.js`, `exam.js`, `game.js`
 ## Status, honestly
 
 Verified against the real backend: wallet sign-in on devnet (throwaway keys), Book entries and counters, letters (cost, reward, blocked words),
-leaderboards, cloud save, and the in-game hooks driven in a browser; the game's own `verify` checklist passes.
-**Not verified end to end:** signing the Memo transaction with a real wallet extension (the public devnet faucet was empty during development),
-and sign-in through the idosgames.com frame. **Not built:** NFT badges, other couriers' ghosts at the test stands.
+leaderboards, cloud save, courier registry, asset index and parcels between two accounts, and the in-game hooks driven in a browser; the game's
+own `verify` checklist passes. On devnet, with a funded key: the Memo seal (digest recomputed and matching) and the module cycle — mint, attributes
+read back, transfer, ownership moves. In a browser the same flows ran with a **stand-in wallet object** that signs with that key: sign-in, seal, write a
+module to the wallet, mail it to another courier, accept it there and watch it appear in the game (and disappear from the sender's).
+
+**Not verified:** a real wallet extension (Phantom/Solflare/Backpack) signing these transactions, and sign-in through the idosgames.com frame.
+**Known limits:** the game is client-side JavaScript, so a determined player can write any module into a wallet without finding it — the Core assets
+prove *ownership and transfer*, not that the module was earned; courier numbers are issued by the registry key, but a courier created before the
+registry (none exist yet on `kz_`) would not be in it. **Not built:** other couriers' ghosts at the test stands.
 
 ---
 
