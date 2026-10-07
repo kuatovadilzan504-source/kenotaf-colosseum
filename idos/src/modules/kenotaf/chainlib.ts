@@ -1,5 +1,5 @@
 // Solana side of the Book of the Council. No imports from the project and no browser globals beyond
-// WebCrypto, so scripts/test-seal.ts runs the very same code in Node against devnet.
+// WebCrypto, so scripts/test-seal.ts runs the very same code in Node against devnet (the same code runs on mainnet).
 import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { Buffer } from "buffer";
 
@@ -48,9 +48,14 @@ export async function sendMemo(connection: Connection, payer: PublicKey, sign: S
   );
   const signed = await sign(tx);
   const sig = await connection.sendRawTransaction(signed.serialize(), { skipPreflight: false });
-  const res = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
-  if (res.value.err) throw new Error(`transaction failed: ${JSON.stringify(res.value.err)}`);
-  return sig;
+  // polled, not subscribed: public RPCs do not all serve the websocket that confirmTransaction opens
+  for (;;) {
+    const st = (await connection.getSignatureStatuses([sig])).value[0];
+    if (st?.err) throw new Error(`transaction failed: ${JSON.stringify(st.err)}`);
+    if (st && (st.confirmationStatus === "confirmed" || st.confirmationStatus === "finalized")) return sig;
+    if ((await connection.getBlockHeight("confirmed")) > lastValidBlockHeight) throw new Error("transaction expired before it was confirmed");
+    await new Promise((r) => setTimeout(r, 1200));
+  }
 }
 
 /** Reads a seal back from the chain: the memo text of a confirmed transaction. */

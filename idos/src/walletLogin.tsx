@@ -11,7 +11,7 @@ import type { LoginScreenExtras } from "./base/login/LoginScreen";
 import { NETWORK_ID } from "./modules/kenotaf/ids";
 import { connectWallet, findProvider, messageSigner } from "./modules/kenotaf/wallet";
 
-// Wallet sign-in for a SOLANA title (devnet), in the courier's words: the signature IS the oath.
+// Wallet sign-in for a SOLANA title (mainnet), in the courier's words: the signature IS the oath.
 //
 //  - Inside idosgames.com's frame the SITE's wallet signs (`loginWithWalletViaPlatform`) — the game
 //    never opens a wallet there.
@@ -76,7 +76,7 @@ function OathButton(props: {
           <a href="https://phantom.app" target="_blank" rel="noreferrer" style={{ color: "#ffd24a" }}>
             Phantom
           </a>{" "}
-          (сеть Devnet) — или играй гостем: записи будут, печать в Solana — нет.
+          — или играй гостем: записи будут, печать в Solana — нет.
         </div>
       )}
       {err && <div style={hint}>{err}</div>}

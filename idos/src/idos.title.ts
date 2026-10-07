@@ -15,7 +15,7 @@
 // one project has one identity, and DEV/PROD is an environment on top of that identity.
 
 /** Canonical (production) Title id. Empty only in the raw template, before the platform seeds it. */
-export const IDOS_TITLE_ID = "XV979CYC";
+export const IDOS_TITLE_ID = "16KMA60R";
 
 /** Build key for this title, if the title enforces one. */
 export const IDOS_BUILD_KEY = "";
@@ -39,7 +39,7 @@ export const IDOS_WEB3 = true;
  * web2 titles. Baked for the same reason as everything else here: the login screen needs it before
  * there is a session, and the title's blockchain config is only readable once logged in.
  */
-export const IDOS_WEB3_NETWORK_ID = "solana-devnet";
+export const IDOS_WEB3_NETWORK_ID = "solana";
 
 /**
  * WalletConnect Cloud / Reown project id (dashboard.reown.com). Enables MOBILE wallet login via

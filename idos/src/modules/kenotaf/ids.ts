@@ -16,12 +16,21 @@ export const COL = {
 
 export const board = (id: string): string => `${NS}${id}`;
 
-/** NetworkID of the Title's Solana network (cfg.Blockchain.Networks). ChainID 103 = devnet. */
-export const NETWORK_ID = "solana-devnet";
-export const DEVNET_RPC = "https://api.devnet.solana.com";
+/**
+ * The chain the game runs on: Solana mainnet. Local testing can switch to devnet (free SOL) with
+ * VITE_KZ_CHAIN=devnet in .env.local; a production build never sets it.
+ */
+const DEVNET = import.meta.env.VITE_KZ_CHAIN === "devnet";
+/** NetworkID of the Title's Solana network (cfg.Blockchain.Networks). */
+export const NETWORK_ID = DEVNET ? "solana-devnet" : "solana";
+/** A public mainnet RPC that answers browsers (api.mainnet-beta.solana.com refuses them with 403). */
+export const RPC_URL = DEVNET ? "https://api.devnet.solana.com" : "https://solana-rpc.publicnode.com";
+const cluster = DEVNET ? "?cluster=devnet" : "";
+export const explorerTx = (sig: string): string => `https://explorer.solana.com/tx/${sig}${cluster}`;
+export const explorerAddr = (a: string): string => `https://explorer.solana.com/address/${a}${cluster}`;
 
 /** Where the game lives on its own address — the only place a wallet extension may sign transactions. */
-export const OWN_ADDRESS = "https://xv979cyc.idos.games";
+export const OWN_ADDRESS = "https://16kma60r.idos.games";
 
 export const STATION_NAMES: Record<string, string> = {
   hub: "Насосная станция",

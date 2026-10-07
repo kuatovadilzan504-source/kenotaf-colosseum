@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "КЕНОТАФ on iDosGames: host shell, wallet sign-in (Solana devnet), the Book of the Council, records, letters.",
+  "description": "КЕНОТАФ on iDosGames: host shell, wallet sign-in (Solana), the Book of the Council, records, letters.",
   "scripts": {
     "sync-game": "node scripts/sync-game.mjs",
     "dev": "npm run sync-game && vite",

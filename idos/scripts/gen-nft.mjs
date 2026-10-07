@@ -3,7 +3,7 @@
 // Usage: node scripts/gen-nft.mjs   → public/nft/<id>.json + <id>.svg
 import fs from "node:fs";
 
-const BASE = "https://xv979cyc.idos.games/nft/";
+const BASE = "https://16kma60r.idos.games/nft/";
 const src = fs.readFileSync(new URL("../../game/js/world/systems.js", import.meta.url), "utf8");
 const ids = /const MODULE_IDS=\[([^\]]+)\]/.exec(src)[1].split(",").map((s) => s.replace(/['\s]/g, ""));
 const out = new URL("../public/nft/", import.meta.url);
@@ -50,7 +50,7 @@ ${title.map((l, i) => `<text x="256" y="${318 + i * 40}" font-size="34" letter-s
         symbol: "KZMOD",
         description: `${desc} Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.`,
         image: `${BASE}${id}.svg`,
-        external_url: "https://xv979cyc.idos.games/",
+        external_url: "https://16kma60r.idos.games/",
         attributes: [{ trait_type: "Module", value: id }, { trait_type: "Game", value: "КЕНОТАФ" }],
         properties: { category: "image", files: [{ uri: `${BASE}${id}.svg`, type: "image/svg+xml" }] },
       },

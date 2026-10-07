@@ -1,14 +1,14 @@
 // Backpack modules as Metaplex Core assets. A module found in the game can be written into the courier's
 // wallet; from then on the game honours it only while the wallet holds it, and it can be mailed to another
 // courier (an ordinary Core transfer). No imports from the project and no browser globals, so
-// scripts/test-modules.ts runs this very code in Node against devnet.
+// scripts/test-modules.ts runs this very code in Node (on devnet, where it costs nothing).
 import { create, fetchAsset, mplCore, transfer } from "@metaplex-foundation/mpl-core";
 import { generateSigner, publicKey, type Signer, type Umi } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 
 /** Where each module's metadata JSON and plate image live (scripts/gen-nft.mjs writes them into the build). */
-export const NFT_BASE = "https://xv979cyc.idos.games/nft/";
+export const NFT_BASE = "https://16kma60r.idos.games/nft/";
 
 export const makeUmi = (rpc: string, identity: Signer): Umi => {
   const umi = createUmi(rpc).use(mplCore());

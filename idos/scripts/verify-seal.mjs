@@ -2,7 +2,7 @@
 //   node scripts/verify-seal.mjs <courierNo> [txSignature]
 // It reads the courier's entries from the platform's ledger (readable by any signed-in account), recomputes
 // the digest exactly as the game does, and — if a transaction signature is given — compares it with the
-// Memo that the courier's wallet put on Solana devnet.  NS=dev_ checks the test namespace.
+// Memo that the courier's wallet put on Solana (RPC=<url> picks the network; devnet for test seals).  NS=dev_ checks the test namespace.
 import { Connection } from "@solana/web3.js";
 import { createIDosGamesClient, where } from "@idosgames/core";
 import { digestOf, parseMemo, readMemo } from "../src/modules/kenotaf/chainlib.ts";
@@ -10,7 +10,7 @@ import { digestOf, parseMemo, readMemo } from "../src/modules/kenotaf/chainlib.t
 const [no, sig] = [Number(process.argv[2]), process.argv[3]];
 if (!no) { console.error("usage: node scripts/verify-seal.mjs <courierNo> [txSignature]"); process.exit(2); }
 const NS = process.env.NS || "kz_";
-const client = createIDosGamesClient({ titleID: process.env.TITLE || "XV979CYC", throttleMs: 0 });
+const client = createIDosGamesClient({ titleID: process.env.TITLE || "16KMA60R", throttleMs: 0 });
 const login = await client.auth.loginWithDeviceID();
 if (!login.ok) throw new Error("sign-in failed: " + login.error);
 
@@ -37,10 +37,10 @@ console.log(`digest of their keys: ${h}`);
 
 // 3. the chain
 if (sig) {
-  const memo = await readMemo(new Connection("https://api.devnet.solana.com", "confirmed"), sig);
+  const memo = await readMemo(new Connection(process.env.RPC || "https://solana-rpc.publicnode.com", "confirmed"), sig);
   const m = memo ? parseMemo(memo) : null;
   if (!m) { console.error("no kenotaf memo in that transaction"); process.exit(1); }
-  console.log(`memo on devnet: courier ${m.c}, ${m.n} entries, digest ${m.h}`);
+  console.log(`memo on chain: courier ${m.c}, ${m.n} entries, digest ${m.h}`);
   console.log(m.h === h && m.n === keys.length ? "MATCH: the Book is exactly as sealed." : "DIFFERENT: the Book has changed since this seal (new entries are normal; compare with the entry count).");
 }
 process.exit(0);

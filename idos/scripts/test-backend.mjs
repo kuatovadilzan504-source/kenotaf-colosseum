@@ -5,7 +5,7 @@ import { Keypair } from "@solana/web3.js";
 import { createIDosGamesClient, where } from "@idosgames/core";
 import { loginWithWalletSolana } from "@idosgames/wallet";
 
-const TITLE = process.env.TITLE || "XV979CYC";
+const TITLE = process.env.TITLE || "16KMA60R";
 const NS = "dev_";
 const wallet = () => {
   const kp = Keypair.generate();

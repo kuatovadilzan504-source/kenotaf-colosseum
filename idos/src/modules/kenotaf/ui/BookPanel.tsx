@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } 
 import { useIDosGamesClient } from "@idosgames/react";
 import { Button, Popup, Tabs, errorText, v } from "@idosgames/react/ui";
 import * as be from "../backend";
-import { BOARDS, COL, ENDING_NAMES, GUARD_NAMES, LORE_TOTAL, MODULES, OWN_ADDRESS, STANDS, STATION_NAMES } from "../ids";
-import { airdrop, balanceSol, embedded, seal } from "../wallet";
+import { BOARDS, COL, ENDING_NAMES, GUARD_NAMES, LORE_TOTAL, MODULES, OWN_ADDRESS, STANDS, STATION_NAMES, explorerAddr, explorerTx } from "../ids";
+import { balanceSol, embedded, seal } from "../wallet";
 import { focusGame, setKz, useKz } from "../store";
 import { DepotTab } from "./DepotTab";
 
@@ -18,7 +18,7 @@ const fmtMs = (ms: number): string => {
   return `${m}:${s < 10 ? "0" : ""}${s.toFixed(2)}`;
 };
 const when = (iso: string): string => new Date(iso).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" });
-const explorer = (sig: string): string => `https://explorer.solana.com/tx/${sig}?cluster=devnet`;
+const explorer = explorerTx;
 
 const box: CSSProperties = { border: `1px solid ${v.panelEdge}`, borderRadius: 8, padding: "10px 12px", background: "rgba(0,0,0,.25)" };
 const dim: CSSProperties = { color: v.textDim, fontSize: 13 };
@@ -137,21 +137,8 @@ function BookTab(): ReactNode {
       if (m === "NO_WALLET") setNote("Не найден кошелёк. Установи Phantom, Solflare или Backpack и обнови страницу.");
       else if (m.startsWith("WRONG_WALLET")) setNote(`Открыт другой кошелёк. Нужен ${me.wallet}.`);
       else if (/User rejected|rejected the request/i.test(m)) setNote("Подпись отклонена.");
-      else if (/0x1|insufficient|Attempt to debit/i.test(m)) setNote("На кошельке нет тестовых SOL: нажми «Получить SOL» или возьми их на faucet.solana.com.");
+      else if (/0x1|insufficient|Attempt to debit/i.test(m)) setNote("На кошельке не хватает SOL для комиссии (нужны доли цента).");
       else setNote(`Печать не удалась: ${m.slice(0, 160)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const getSol = async (): Promise<void> => {
-    if (!me.wallet) return;
-    setBusy(true);
-    try {
-      await airdrop(me.wallet);
-      setNote("Начислен 1 тестовый SOL.");
-    } catch {
-      setNote("Фаусет devnet сейчас отказывает. Возьми SOL на https://faucet.solana.com (сеть Devnet).");
     } finally {
       setBusy(false);
     }
@@ -165,10 +152,10 @@ function BookTab(): ReactNode {
           {me.wallet ? (
             <>
               Кошелёк{" "}
-              <a style={{ color: v.gold }} href={`https://explorer.solana.com/address/${me.wallet}?cluster=devnet`} target="_blank" rel="noreferrer">
+              <a style={{ color: v.gold }} href={explorerAddr(me.wallet)} target="_blank" rel="noreferrer">
                 {be.shortWallet(me.wallet)}
               </a>{" "}
-              (Solana devnet)
+              (Solana)
             </>
           ) : (
             "Присяга без кошелька: записи есть, запечатать их в Solana нельзя."
@@ -184,7 +171,7 @@ function BookTab(): ReactNode {
         <div style={{ marginBottom: 6, color: v.gold }}>Печать Книги</div>
         <div style={{ ...dim, lineHeight: 1.5 }}>
           Платформа ведёт Книгу сама. Чтобы запись нельзя было переписать, курьер запечатывает её своим кошельком: одна транзакция Memo в
-          Solana devnet с хешем всех записей. Хеш можно пересчитать по открытой Книге и сравнить.
+          Solana с хешем всех записей (комиссия — доли цента). Хеш можно пересчитать по открытой Книге и сравнить.
         </div>
         {!me.wallet && <div style={{ ...dim, marginTop: 8 }}>Войди кошельком (выход из аккаунта в лобби), чтобы печать стала доступна.</div>}
         {me.wallet && embedded() && (
@@ -201,11 +188,6 @@ function BookTab(): ReactNode {
             <Button busy={busy} disabled={!rows || pending === 0 && sealed > 0} onClick={() => void doSeal()}>
               Запечатать в Solana
             </Button>
-            {sol !== null && sol < 0.002 && (
-              <Button tone="grey" busy={busy} onClick={() => void getSol()}>
-                Получить SOL
-              </Button>
-            )}
             <span style={dim}>{sol !== null ? `на кошельке ${sol.toFixed(3)} SOL` : ""}</span>
           </div>
         )}

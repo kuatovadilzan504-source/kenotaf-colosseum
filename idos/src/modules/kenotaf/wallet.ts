@@ -1,6 +1,6 @@
 import { Connection, PublicKey, LAMPORTS_PER_SOL, type Transaction } from "@solana/web3.js";
 import { isEmbeddedInPlatform } from "@idosgames/wallet";
-import { DEVNET_RPC } from "./ids";
+import { RPC_URL } from "./ids";
 import { publicKey as umiKey, type Signer } from "@metaplex-foundation/umi";
 import { fromWeb3JsTransaction, toWeb3JsTransaction } from "@metaplex-foundation/umi-web3js-adapters";
 import { makeUmi, mintModule, readUmi, sendModule } from "./modulenft";
@@ -40,21 +40,13 @@ export const messageSigner = (provider: Injected) => async (m: Uint8Array): Prom
   return r instanceof Uint8Array ? r : r.signature;
 };
 
-export const connection = (): Connection => new Connection(DEVNET_RPC, "confirmed");
+export const connection = (): Connection => new Connection(RPC_URL, "confirmed");
 
 export async function balanceSol(address: string): Promise<number> {
   return (await connection().getBalance(new PublicKey(address))) / LAMPORTS_PER_SOL;
 }
 
-/** Devnet faucet; it is rate-limited, so a failure is reported to the courier as such. */
-export async function airdrop(address: string): Promise<void> {
-  const c = connection();
-  const sig = await c.requestAirdrop(new PublicKey(address), LAMPORTS_PER_SOL);
-  const { blockhash, lastValidBlockHeight } = await c.getLatestBlockhash();
-  await c.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
-}
-
-/** Seals the ledger keys in one devnet transaction; returns its signature. */
+/** Seals the ledger keys in one transaction; returns its signature. */
 export async function seal(keys: string[], no: number, expectWallet: string | null): Promise<string> {
   const { provider, address } = await connectWallet();
   if (expectWallet && expectWallet !== address) throw new Error(`WRONG_WALLET:${expectWallet}`);
@@ -82,7 +74,7 @@ export function umiSignerOf(provider: Injected, address: string): Signer {
 async function signerUmi(expectWallet: string | null) {
   const { provider, address } = await connectWallet();
   if (expectWallet && expectWallet !== address) throw new Error(`WRONG_WALLET:${expectWallet}`);
-  return makeUmi(DEVNET_RPC, umiSignerOf(provider, address));
+  return makeUmi(RPC_URL, umiSignerOf(provider, address));
 }
 
 /** Writes a found module into the courier's wallet as a Core asset; returns its address and the transaction. */
@@ -95,4 +87,4 @@ export async function mailToWallet(asset: string, toWallet: string, expectWallet
   return sendModule(await signerUmi(expectWallet), asset, toWallet);
 }
 
-export const chainReader = () => readUmi(DEVNET_RPC);
+export const chainReader = () => readUmi(RPC_URL);

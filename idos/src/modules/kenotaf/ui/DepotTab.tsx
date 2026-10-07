@@ -2,17 +2,16 @@ import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } 
 import { useIDosGamesClient } from "@idosgames/react";
 import { Button, errorText, v } from "@idosgames/react/ui";
 import { acceptParcel, foundModules, incomingParcels, mintModuleFlow, sendModuleFlow, syncDepot, type Parcel } from "../depot";
-import { MODULES, OWN_ADDRESS } from "../ids";
+import { MODULES, OWN_ADDRESS, explorerAddr } from "../ids";
 import { useKz } from "../store";
 import { embedded } from "../wallet";
 
 // The depot: the twelve backpack modules. A module found in the game can be written into the courier's
 // wallet (a Metaplex Core asset); from then on the game keeps it only while the wallet holds it, and the
-// pneumatic mail can carry it to another courier — a plain transfer of the asset on Solana devnet.
+// pneumatic mail can carry it to another courier — a plain transfer of the asset on Solana.
 
 const box: CSSProperties = { border: `1px solid ${v.panelEdge}`, borderRadius: 8, padding: "10px 12px", background: "rgba(0,0,0,.25)" };
 const dim: CSSProperties = { color: v.textDim, fontSize: 13 };
-const acct = (a: string): string => `https://explorer.solana.com/address/${a}?cluster=devnet`;
 
 function explain(e: unknown): string {
   const m = e instanceof Error ? e.message : String(e);
@@ -23,7 +22,7 @@ function explain(e: unknown): string {
   if (m === "NOT_HELD") return "Этот модуль не у тебя в кошельке: передача не дошла.";
   if (m === "NOT_A_MODULE") return "Это не модуль КЕНОТАФА.";
   if (/User rejected|rejected the request/i.test(m)) return "Подпись отклонена.";
-  if (/0x1\b|insufficient|Attempt to debit|no record of a prior credit/i.test(m)) return "На кошельке нет тестовых SOL: faucet.solana.com (сеть Devnet).";
+  if (/0x1\b|insufficient|Attempt to debit|no record of a prior credit/i.test(m)) return "На кошельке не хватает SOL для комиссии (запись модуля ≈ 0.0035 SOL).";
   return errorText(m).slice(0, 180);
 }
 
@@ -99,7 +98,7 @@ export function DepotTab(): ReactNode {
               {held ? (
                 <>
                   в кошельке:{" "}
-                  <a style={{ color: v.gold }} href={acct(held.asset)} target="_blank" rel="noreferrer">
+                  <a style={{ color: v.gold }} href={explorerAddr(held.asset)} target="_blank" rel="noreferrer">
                     {held.asset.slice(0, 6)}…
                   </a>
                 </>
@@ -154,8 +153,8 @@ export function DepotTab(): ReactNode {
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <div style={{ ...box, fontSize: 13, lineHeight: 1.5 }}>
-        Найденный модуль ранца можно записать в кошелёк как актив Solana (Metaplex Core, devnet). С этого момента игра держит его в ранце, пока он у
-        тебя в кошельке. Отправь его другому курьеру по номеру — модуль уйдёт из твоего ранца и появится в его. Подпись — в твоём кошельке, ~0.003 SOL.
+        Найденный модуль ранца можно записать в кошелёк как актив Solana (Metaplex Core, Solana mainnet). С этого момента игра держит его в ранце, пока он у
+        тебя в кошельке. Отправь его другому курьеру по номеру — модуль уйдёт из твоего ранца и появится в его. Запись и отправка — настоящие транзакции Solana: подпись в твоём кошельке, запись ≈ 0.0035 SOL (аренда аккаунта актива), отправка — доли цента.
       </div>
       {note && <div style={{ fontSize: 13, color: v.gold }}>{note}</div>}
       {parcels.length > 0 && (

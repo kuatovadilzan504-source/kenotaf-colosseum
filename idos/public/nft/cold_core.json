@@ -2,8 +2,8 @@
   "name": "ХОЛОДНЫЙ КОТЁЛ",
   "symbol": "KZMOD",
   "description": "РЕЗАК НЕ ПЕРЕГРЕВАЕТСЯ — РАЗРЫВА НЕТ. ЗАТО ИМПУЛЬС ЕСТ ВДВОЕ МЕНЬШЕ ДАВЛЕНИЯ. Модуль ранца курьера из игры КЕНОТАФ: пока кошелёк владеет им, он работает в игре.",
-  "image": "https://xv979cyc.idos.games/nft/cold_core.svg",
-  "external_url": "https://xv979cyc.idos.games/",
+  "image": "https://16kma60r.idos.games/nft/cold_core.svg",
+  "external_url": "https://16kma60r.idos.games/",
   "attributes": [
     {
       "trait_type": "Module",
@@ -18,7 +18,7 @@
     "category": "image",
     "files": [
       {
-        "uri": "https://xv979cyc.idos.games/nft/cold_core.svg",
+        "uri": "https://16kma60r.idos.games/nft/cold_core.svg",
         "type": "image/svg+xml"
       }
     ]

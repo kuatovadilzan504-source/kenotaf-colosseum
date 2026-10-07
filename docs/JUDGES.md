@@ -4,8 +4,8 @@ Everything you need to review КЕНОТАФ in **5 minutes**, plus how to check
 
 | | |
 |---|---|
-| **Play** | https://xv979cyc.idos.games/ — also on the platform page https://idosgames.com/app/XV979CYC/ |
-| Network | Solana **devnet** |
+| **Play** | https://16kma60r.idos.games/ — also on the platform page https://idosgames.com/app/16KMA60R/ |
+| Network | Solana **mainnet** — the on-chain actions cost real (tiny) SOL: the seal a fraction of a cent, writing a module ≈ 0.0035 SOL |
 | Needs | a desktop browser (Chrome / Edge); a Solana wallet only for the optional on-chain seal |
 | First load | about 10 seconds (the game is 2 MB of scripts and builds its art procedurally) |
 
@@ -22,7 +22,7 @@ Metaplex Core assets: the game keeps a module in your backpack only while your w
 
 The online parts sit on top of the real game, so the quickest way to see them is to play the first minutes.
 
-1. Open https://xv979cyc.idos.games/ and press **«Играть гостем (без кошелька)»**.
+1. Open https://16kma60r.idos.games/ and press **«Играть гостем (без кошелька)»**.
 2. The game menu shows your identity line: **«КУРЬЕР №N  ГОСТЬ  МАРОК 5»**. The number comes from the platform's counter; 5 stamps
    (марок) is the starting balance. The menu also has a **«КНИГА УЧЁТА»** button.
 
@@ -57,16 +57,16 @@ The online parts sit on top of the real game, so the quickest way to see them is
 
 ## Path B — the Solana part (≈5 more minutes)
 
-You need a browser wallet (Phantom, Solflare or Backpack) switched to **Devnet** (Phantom: Settings → Developer Settings →
-Testnet Mode → Solana Devnet) and a few devnet SOL from https://faucet.solana.com (0.01 SOL is plenty).
+You need a browser wallet (Phantom, Solflare or Backpack) on **Solana mainnet** with a little SOL (0.001 SOL covers the seal;
+≈ 0.005 SOL covers one module). Signing in costs nothing — it is a message signature.
 
-1. Open **https://xv979cyc.idos.games/** (the game's own address — wallets may sign transactions here; inside the
+1. Open **https://16kma60r.idos.games/** (the game's own address — wallets may sign transactions here; inside the
    idosgames.com frame the page lends the game its wallet for **sign-in only**).
 2. Press **«Принять присягу кошельком Solana»**. The wallet asks for a **message signature** (no transaction, no fee). That
    signature is the whole login: your **address is your account**. The menu now shows `КУРЬЕР №N  4Fy…9aQ`.
 3. Do something that goes into the Book (path A, step 4: read a cylinder).
 4. **Esc → «КНИГА УЧЁТА» → «Запечатать в Solana».** The wallet asks to sign **one transaction**. The Book tab then shows a ◆
-   next to each sealed entry; the link opens the transaction in Solana Explorer (devnet): a **Memo** instruction with JSON like
+   next to each sealed entry; the link opens the transaction in Solana Explorer: a **Memo** instruction with JSON like
    `{"app":"kenotaf","v":1,"c":7,"n":12,"h":"<sha-256>"}` — courier number, entry count and the digest of all entry keys.
 5. **Verify without trusting us:**
    ```bash
@@ -74,10 +74,10 @@ Testnet Mode → Solana Devnet) and a few devnet SOL from https://faucet.solana.
    node scripts/verify-seal.mjs <courierNo> <transactionSignature>
    ```
    It signs in as a throwaway guest, reads the courier's entries from the platform's ledger (readable by any signed-in account),
-   recomputes the digest exactly as the game does and compares it with the Memo from devnet.
+   recomputes the digest exactly as the game does and compares it with the Memo on chain.
    (`NS=dev_` checks the test namespace.)
 
-## Path C — modules as assets, mailed between couriers (≈5 more minutes, needs ~0.01 devnet SOL)
+## Path C — modules as assets, mailed between couriers (≈5 more minutes, needs ≈ 0.005 SOL on mainnet)
 
 1. Play until you pick up a backpack module. A wallet login is needed.
 2. Go to a pneumatic-mail hatch (**E**, **E**) and choose **«ПОСЫЛКИ И СКЛАД»** — or open **Esc → КНИГА УЧЁТА → «Склад»**.
@@ -90,7 +90,7 @@ Testnet Mode → Solana Devnet) and a few devnet SOL from https://faucet.solana.
    Mint and mail also appear in the Book and are covered by the seal.
 
 ```bash
-cd idos && KZ_TEST_KEY=<json secret key with ~0.01 devnet SOL> node scripts/test-modules.ts   # the same cycle without a browser
+cd idos && KZ_TEST_KEY=<json secret key with ~0.01 devnet SOL> node scripts/test-modules.ts   # the same cycle without a browser, on devnet (free SOL)
 ```
 
 ## What to look at, by criterion
@@ -99,12 +99,12 @@ cd idos && KZ_TEST_KEY=<json secret key with ~0.01 devnet SOL> node scripts/test
 |---|---|
 | **Creativity & originality** | Solana is the game's *setting*: the Council's ledger is the Book; reading other people's letters is the game's one sin and here it pays a stamp; the ending screen tallies how all couriers ended the game. |
 | **Gameplay & UX** | A complete 86-room metroidvania underneath (see the main README). Online parts never interrupt play: they are toasts in the game's own voice, the station menu and the pause menu. The game also runs without any of it (open `game/index.html`). |
-| **Solana integration** | Wallet sign-in on devnet (signature-only), account = address; the Book is bound to the wallet; letters/stamps/records/cloud-save belong to that account; the optional on-chain **seal** (Memo with a recomputable digest); the backpack modules as **Metaplex Core assets** — mint, hold (the game honours them only while the wallet holds them) and transfer between couriers through the pneumatic mail. |
+| **Solana integration** | Wallet sign-in on Solana (signature-only), account = address; the Book is bound to the wallet; letters/stamps/records/cloud-save belong to that account; the optional on-chain **seal** (Memo with a recomputable digest); the backpack modules as **Metaplex Core assets** — mint, hold (the game honours them only while the wallet holds them) and transfer between couriers through the pneumatic mail. |
 | **Execution** | The platform side is pure configuration generated by a script (`idos/scripts/gen-config.mjs`); tests that exercise it with throwaway wallets (`idos/scripts/test-backend.mjs`); moderation and ban levels are configured, not promised. |
 
 ## Honest limits (so nothing surprises you)
 
-- **No real wallet extension was used by the author.** The seal and the module flows were run on devnet with a funded key, in Node and in a browser
+- **No real wallet extension was used by the author.** The seal and the module flows were run on **devnet** with a funded key (the game itself targets mainnet; the code is the same, only the RPC and network id differ — nothing was spent on mainnet by the author), in Node and in a browser
   through a stand-in wallet object that signs with that key. If Phantom, Solflare or Backpack misbehave on the seal, the mint or the transfer,
   please tell us. Sign-in through the idosgames.com frame was not tested either (and inside that frame the game cannot sign transactions at all —
   the Book says so and links to the game's own address).
@@ -116,5 +116,5 @@ cd idos && KZ_TEST_KEY=<json secret key with ~0.01 devnet SOL> node scripts/test
 
 - **A black or empty page for ~10 s** — normal first load. If it persists, try Chrome/Edge and a hard refresh.
 - **«Кошелёк не найден»** — the extension is not injected on this page; reload after unlocking it.
-- **The wallet shows Mainnet** — switch it to Devnet before signing; the seal goes to devnet only.
+- **«Не хватает SOL»** — the seal needs a fraction of a cent, a module ≈ 0.0035 SOL (rent of the asset account).
 - **The Book tabs fill in slowly** — the platform answers counter reads at a pace of a couple per second.

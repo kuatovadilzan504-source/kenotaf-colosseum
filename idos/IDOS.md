@@ -10,7 +10,7 @@ history of individual features does NOT belong here (see "Feature history" at th
 <!-- 2–4 lines, filled in once the direction is clear: genre, core loop, target platform, tone.
      Update it when the concept changes — not with every feature. -->
 
-КЕНОТАФ — a diesel-punk metroidvania (vanilla JS, ../game) mounted as one module. The host adds Solana devnet wallet
+КЕНОТАФ — a diesel-punk metroidvania (vanilla JS, ../game) mounted as one module. The host adds Solana wallet
 sign-in, the **Book of the Council** (a ledger of the courier's deeds in the `ledger` data collection, sealable with one Memo
 transaction), seven leaderboards, letters between couriers (`letters` / `reads`, paid in the `Stamps` currency), a cloud save, a courier registry
 (`couriers`) and the twelve backpack modules as Metaplex Core assets (`assets` index, `parcels` notices) that the game keeps only while the wallet

@@ -27,8 +27,8 @@ bound to your wallet.
 | Beat a guardian, pass a test stand, take the exam | Book entries; stands and the exam also post times to **leaderboards** (seven in all). |
 | Choose an ending | "Door" or "Truth" is recorded; the *Council* tab shows how all couriers ended the game. |
 | Leave a letter at a pneumatic station | Other couriers find it there. Posting costs one **stamp** (a platform currency); every foreign letter you read pays one back. Moderators can delete letters and **ban** couriers — the dialog says so. |
-| Press *«Запечатать в Solana»* | One **Memo transaction on devnet**, signed by your wallet, with the SHA-256 digest of your Book keys. [`verify-seal.mjs`](idos/scripts/verify-seal.mjs) recomputes it from the public ledger. |
-| Find a backpack module | One of twelve. The **Depot** tab can write it into your wallet as a **Metaplex Core asset** (attributes: module, courier, game). From then on the game keeps it in your backpack only while the wallet holds it. |
+| Press *«Запечатать в Solana»* | One **Memo transaction on Solana mainnet** (a fraction of a cent), signed by your wallet, with the SHA-256 digest of your Book keys. [`verify-seal.mjs`](idos/scripts/verify-seal.mjs) recomputes it from the public ledger. |
+| Find a backpack module | One of twelve. The **Depot** tab can write it into your wallet as a **Metaplex Core asset** on mainnet (attributes: module, courier, game; ≈ 0.0035 SOL of account rent). From then on the game keeps it in your backpack only while the wallet holds it. |
 | Pneumatic mail → *«ПОСЫЛКИ И СКЛАД»* | Send a module to another courier by number: a plain Core **transfer** to their wallet, a parcel notice for them, and the module leaves your backpack and appears in theirs. The recipient's wallet is looked up in the courier registry. |
 | Close the tab | The save lives in the cloud under your account; the newer of cloud and local wins on the next device. |
 
@@ -48,8 +48,8 @@ bound to your wallet.
  │  │   modules (the game follows the wallet)
  │  └ Book / Depot / letter dialogs, seal (Memo tx), mint & transfer (Core)
  └──────────────┬──────────────────────────────────┬───────────────┘
-                │ platform API                     │ Solana devnet RPC
-        iDos Games Title XV979CYC          Memo + Metaplex Core (wallet-signed)
+                │ platform API                     │ Solana mainnet RPC
+        iDos Games Title 16KMA60R          Memo + Metaplex Core (wallet-signed)
         data collections · leaderboards
         currency · custom data · bans
 ```
@@ -63,7 +63,7 @@ The platform side is **configuration, not code** — `idos/scripts/gen-config.mj
   asset is which module of which courier, counters per module) and `parcels` (notices for the recipient, expire in 30 days);
 - seven leaderboards (five test stands, the Council exam, cylinders read);
 - Private custom-data key for the cloud save, Public key for the courier number;
-- ban levels (`council` blocks login), the `moderator` role, the Solana devnet network.
+- ban levels (`council` blocks login), the `moderator` role, the Solana network (mainnet; devnet kept for tests).
 
 Two namespaces exist: `kz_` (players) and `dev_` (tests; owners may delete, so test scripts clean up after themselves). The platform plan allows ten
 collections, so `dev_` holds only the four the module tests need (letters and reads were tested earlier and are unchanged).
@@ -80,7 +80,7 @@ open game/index.html
 # the whole thing (host + game) against the test namespace
 cd idos
 npm install
-echo VITE_KZ_NS=dev_ > .env.local
+printf 'VITE_KZ_NS=dev_\nVITE_KZ_CHAIN=devnet\n' > .env.local   # test collections + free devnet SOL; a production build sets neither
 npm run dev                       # http://localhost:5180
 npm run typecheck
 ```
@@ -91,7 +91,7 @@ Tests (real backend, throwaway wallets, they clean up after themselves):
 cd idos
 node scripts/test-wallet-login.mjs     # Solana sign-in, no browser
 node scripts/test-backend.mjs          # Book, letters, stamps, blocked words, leaderboards, cloud save  → ALL OK
-node scripts/test-seal.ts              # Memo seal on devnet; needs ~0.1 devnet SOL on a fresh key (KZ_TEST_KEY=<json key>)
+node scripts/test-seal.ts              # Memo seal on devnet (free SOL); KZ_TEST_KEY=<json key>
 node scripts/test-modules.ts           # Core mint → read attributes → transfer → ownership moved; KZ_TEST_KEY=<json key>, ~0.004 SOL
 node scripts/verify-seal.mjs 1         # recompute courier №1's digest (NS=dev_ for the test namespace)
 ```
@@ -120,9 +120,9 @@ hooks in `game/js/` (`systems.js`, `world.js`, `trials.js`, `exam.js`, `game.js`
 
 ## Status, honestly
 
-Verified against the real backend: wallet sign-in on devnet (throwaway keys), Book entries and counters, letters (cost, reward, blocked words),
+Verified against the real backend (Title 16KMA60R): wallet sign-in (throwaway keys), Book entries and counters, letters (cost, reward, blocked words),
 leaderboards, cloud save, courier registry, asset index and parcels between two accounts, and the in-game hooks driven in a browser; the game's
-own `verify` checklist passes. On devnet, with a funded key: the Memo seal (digest recomputed and matching) and the module cycle — mint, attributes
+own `verify` checklist passes. On **devnet**, with a funded key: the Memo seal (digest recomputed and matching) and the module cycle — mint, attributes
 read back, transfer, ownership moves. In a browser the same flows ran with a **stand-in wallet object** that signs with that key: sign-in, seal, write a
 module to the wallet, mail it to another courier, accept it there and watch it appear in the game (and disappear from the sender's).
 
