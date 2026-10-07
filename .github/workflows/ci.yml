@@ -18,7 +18,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: idos/package-lock.json
-      - run: npm ci
+      # the lock was written on Windows by an older npm; a fresh resolve is what works on the runner
+      - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       - run: npm run build
         env:
