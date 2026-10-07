@@ -1,198 +1,173 @@
-# КЕНОТАФ
+# КЕНОТАФ — Cenotaph
 
-**A diesel-punk metroidvania where Solana is the Council's ledger.**
-You are a courier in an underground arcology whose Council forbids couriers to read the letters they carry. You read them anyway —
-and now your wallet is your account, every deed goes into a Book you can seal on-chain, couriers leave letters for each other —
-and the modules of your backpack are **Metaplex Core assets** that the game honours only while your wallet holds them, and that the pneumatic mail can carry to another courier.
+[![CI](https://github.com/kuatovadilzan504-source/kenotaf-colosseum/actions/workflows/ci.yml/badge.svg)](https://github.com/kuatovadilzan504-source/kenotaf-colosseum/actions/workflows/ci.yml)
+[![Solana](https://img.shields.io/badge/Solana-mainnet-9945FF)](https://solana.com)
+[![Metaplex Core](https://img.shields.io/badge/Metaplex-Core-14F195)](https://developers.metaplex.com/core)
+[![iDos Games](https://img.shields.io/badge/built%20on-iDos%20Games-F5C451)](https://idosgames.com/app/16KMA60R/)
+[![Hackathon](https://img.shields.io/badge/Colosseum-2026-14F195)](https://colosseum.org)
 
-Reviewing? Start with [docs/JUDGES.md](docs/JUDGES.md).
+> A diesel-punk metroidvania where **Solana is the Council's ledger**: your wallet is your courier identity, every deed goes into a
+> Book you can seal on-chain, and the modules of your backpack are **Metaplex Core assets** that the game honours only while your
+> wallet holds them — and that the pneumatic mail can carry to another player.
 
-![menu](docs/img/menu.jpg)
+[**Play now**](https://16kma60r.idos.games/) · [Judges' guide](docs/JUDGES.md) · [Architecture](docs/ARCHITECTURE.md) · [The game (RU)](docs/GAME.md) · [Platform page](https://idosgames.com/app/16KMA60R/)
 
-## What it is
+---
 
-КЕНОТАФ is a complete single-player game: five zones, 86 rooms, eight abilities, five guardians and five mini-bosses, thirty recorded
-cylinders, fifteen stashes, two endings and a post-game Council exam. Combat is about *breaking* a mechanism's parts, not killing it.
-The game is plain JavaScript with no build step — open `game/index.html` and it runs.
+![КЕНОТАФ — main menu](docs/img/menu.jpg)
 
-## What the hackathon added: Solana is the setting, not a menu
+---
 
-The Council of the arcology keeps a ledger of everything a courier does. In the game that ledger is the **Book of the Council**, and it is
-bound to your wallet.
+## Submission to the iDos Games × Solana hackathon (Colosseum 2026)
 
-| In the game | On the platform / on Solana |
-|---|---|
-| Start | **Wallet sign-in** (Phantom, Solflare, Backpack, or the idosgames.com wallet): you sign the server's challenge; your address *is* your account and you become **Courier №N**. Guests can play too. |
-| Read a recorded cylinder | A `read:N` entry goes into your Book; the game tells you how many couriers have read it. |
-| Beat a guardian, pass a test stand, take the exam | Book entries; stands and the exam also post times to **leaderboards** (seven in all). |
-| Choose an ending | "Door" or "Truth" is recorded; the *Council* tab shows how all couriers ended the game. |
-| Leave a letter at a pneumatic station | Other couriers find it there. Posting costs one **stamp** (a platform currency); every foreign letter you read pays one back. Moderators can delete letters and **ban** couriers — the dialog says so. |
-| Press *«Запечатать в Solana»* | One **Memo transaction on Solana mainnet** (a fraction of a cent), signed by your wallet, with the SHA-256 digest of your Book keys. [`verify-seal.mjs`](idos/scripts/verify-seal.mjs) recomputes it from the public ledger. |
-| Find a backpack module | One of twelve. The **Depot** tab can write it into your wallet as a **Metaplex Core asset** on mainnet (attributes: module, courier, game; ≈ 0.0035 SOL of account rent). From then on the game keeps it in your backpack only while the wallet holds it. |
-| Pneumatic mail → *«ПОСЫЛКИ И СКЛАД»* | Send a module to another courier by number: a plain Core **transfer** to their wallet, a parcel notice for them, and the module leaves your backpack and appears in theirs. The recipient's wallet is looked up in the courier registry. |
-| Close the tab | The save lives in the cloud under your account; the newer of cloud and local wins on the next device. |
+| Name | Role | Contact |
+|------|------|---------|
+| Kuatov Adilzhan | Solo developer | [GitHub](https://github.com/kuatovadilzan504-source) |
+
+---
+
+## Problem and Solution
+
+### 1. The chain is bolted on, not part of the game
+- **Problem:** in most Web3 games the blockchain is a shop or a token menu next to the game; a player who doesn't care about crypto feels nothing.
+- **КЕНОТАФ:** the story is about a Council that keeps a ledger of couriers and forbids them to read the letters they carry. Solana *is* that ledger — sign-in is the courier's oath, the seal is the Council's stamp, the mail carries real assets.
+
+### 2. Player progress lives in a database you have to trust
+- **Problem:** achievements and records can be rewritten by whoever runs the server.
+- **КЕНОТАФ:** the **Book of the Council** (letters read, guardians beaten, records, endings, modules minted and mailed) can be sealed by the player's own wallet with one **Memo** transaction carrying a SHA-256 digest of every entry. [`verify-seal.mjs`](idos/scripts/verify-seal.mjs) recomputes it from the public ledger and compares it with the chain.
+
+### 3. "Owned" items are rows in someone else's table
+- **Problem:** in-game items belong to the game's database, not to the player.
+- **КЕНОТАФ:** the twelve backpack modules can be written into the wallet as **Metaplex Core assets**. The game reads ownership **from Solana every time** — sell, lose or mail the asset and the module leaves your backpack.
+
+### 4. Single-player games are lonely, and a social layer needs a backend
+- **Problem:** letters, trading and shared statistics usually mean servers, moderation and months of work.
+- **КЕНОТАФ:** couriers leave letters at the mail stations and mail modules to each other; the whole server side is **iDos Games configuration** (data collections, a `Stamps` currency, leaderboards, word filter, ban levels), generated by one script.
+
+### 5. Onboarding friction
+- **Problem:** wallets, fees and gas scare players away before the game starts.
+- **КЕНОТАФ:** signing in is a message signature — no transaction, no fee. Guests can play everything except the on-chain actions. The game also runs completely standalone (`game/index.html`).
+
+---
+
+## Why Solana
+
+- **Cost** — the seal is one Memo transaction for a fraction of a cent; a player can seal their Book whenever they like.
+- **Cheap, simple assets** — a Metaplex Core asset is a single account (≈ 0.0035 SOL of rent in our tests) with on-chain attributes (`module`, `courier`, `game`); no token accounts, no extra metadata programs.
+- **Speed** — a mint or a transfer confirms in seconds, so mailing a module feels like part of the game, not a checkout.
+- **Wallets players already have** — Phantom, Solflare and Backpack sign the login challenge, the seal and the transfers directly in the browser.
+
+---
+
+## Summary of Features
+
+- **Wallet sign-in** (signature only) → courier number from a registry whose record key *is* the number, so numbers are never shared
+- **The Book of the Council** — every deed recorded per wallet; counters show how many couriers did the same
+- **On-chain seal** — one Memo transaction with the digest of the whole Book, independently verifiable
+- **Backpack modules as Metaplex Core assets** — mint, hold (the game follows the wallet), transfer
+- **Pneumatic mail** — send a module to another courier by number; the recipient accepts it after an on-chain ownership check
+- **Letters between couriers** — cost a stamp, reading a stranger's letter pays one back; word filter, moderator role, ban levels
+- **Seven leaderboards** (five test stands, the Council exam, letters read) and the **Council** tab: how all couriers ended the game
+- **Cloud save** bound to the account
+- Underneath: a complete metroidvania — 86 rooms, five zones, ten bosses, thirty recorded letters, two endings
 
 | | | |
 |---|---|---|
 | ![station](docs/img/station.jpg) | ![letter](docs/img/letter.jpg) | ![book](docs/img/book-modules.jpg) |
-| Station menu | Letter dialog with the moderation warning | The Book: a module written to the wallet and mailed to courier №5, all sealed |
-
-## How it works
-
-```
- ┌────────── browser ──────────────────────────────────────────────┐
- │  host page (React, iDos Games SDK)          game (iframe, vanilla JS)
- │  ├ wallet sign-in                           ├ js/core/chain.js   ← the ONLY code that knows the host
- │  ├ module "kenotaf"  ◄── postMessage ─────► │ hooks: lore, guardian, stand, exam, ending, mail station
- │  │   bridge → Book, leaderboards, letters,  └ works alone (file://): every Chain call is a no-op
- │  │   modules (the game follows the wallet)
- │  └ Book / Depot / letter dialogs, seal (Memo tx), mint & transfer (Core)
- └──────────────┬──────────────────────────────────┬───────────────┘
-                │ platform API                     │ Solana mainnet RPC
-        iDos Games Title 16KMA60R          Memo + Metaplex Core (wallet-signed)
-        data collections · leaderboards
-        currency · custom data · bans
-```
-
-The platform side is **configuration, not code** — `idos/scripts/gen-config.mjs` generates it:
-
-- currency `Stamps` (start with 5);
-- collections `ledger` (one record per deed, counters per key), `letters` (140 chars, costs a stamp, word filter, owner/moderator delete)
-  and `reads` (one per courier per letter, pays a stamp, counter per letter);
-- collections `couriers` (the key `c<no>` is the courier number, so a number is issued once and gives the wallet for mail), `assets` (which Core
-  asset is which module of which courier, counters per module) and `parcels` (notices for the recipient, expire in 30 days);
-- seven leaderboards (five test stands, the Council exam, cylinders read);
-- Private custom-data key for the cloud save, Public key for the courier number;
-- ban levels (`council` blocks login), the `moderator` role, the Solana network (mainnet; devnet kept for tests).
-
-Two namespaces exist: `kz_` (players) and `dev_` (tests; owners may delete, so test scripts clean up after themselves). The platform plan allows ten
-collections, so `dev_` holds only the four the module tests need (letters and reads were tested earlier and are unchanged).
-
-**Who owns a module is read from Solana every time** (`fetchAsset`), not from the database: the platform stores only the index. The module's
-metadata and plate (`public/nft/<id>.json|svg`, generated from the game's own table by `scripts/gen-nft.mjs`) are served with the game.
-
-## Run it
-
-```bash
-# the game alone — no build, no server
-open game/index.html
-
-# the whole thing (host + game) against the test namespace
-cd idos
-npm install
-printf 'VITE_KZ_NS=dev_\nVITE_KZ_CHAIN=devnet\n' > .env.local   # test collections + free devnet SOL; a production build sets neither
-npm run dev                       # http://localhost:5180
-npm run typecheck
-```
-
-Tests (real backend, throwaway wallets, they clean up after themselves):
-
-```bash
-cd idos
-node scripts/test-wallet-login.mjs     # Solana sign-in, no browser
-node scripts/test-backend.mjs          # Book, letters, stamps, blocked words, leaderboards, cloud save  → ALL OK
-node scripts/test-seal.ts              # Memo seal on devnet (free SOL); KZ_TEST_KEY=<json key>
-node scripts/test-modules.ts           # Core mint → read attributes → transfer → ownership moved; KZ_TEST_KEY=<json key>, ~0.004 SOL
-node scripts/verify-seal.mjs 1         # recompute courier №1's digest (NS=dev_ for the test namespace)
-```
-
-
-
-## Repository layout
-
-```
-game/                  the game (vanilla JS, 1.8 MB) — see "КЕНОТАФ (игра)" below
-  js/core/chain.js     the bridge to the host (postMessage; no-ops when not embedded)
-idos/                  the iDos Games host
-  src/modules/kenotaf/ module.tsx (mounts the game), bridge.ts, backend.ts, depot.ts (modules, mail), modulenft.ts (Core), chainlib.ts (Memo seal), wallet.ts, ui/
-  src/walletLogin.tsx  Solana sign-in
-  scripts/             gen-config, smoke tests, verify-seal, zip packer
-docs/                  JUDGES.md, game design docs, screenshots
-tools/                 the game's automated checks and screenshot labs
-screenshots/           art
-```
-
-## Timeline and what is new
-
-The single-player game was built before the hackathon: its history is the commits of 1–5 October 2026 in the original development
-repository, imported here as the first commit. Everything for the hackathon is in `idos/`, `game/js/core/chain.js`, a handful of one-line
-hooks in `game/js/` (`systems.js`, `world.js`, `trials.js`, `exam.js`, `game.js`, `post.js`, `state.js`) and `docs/`.
-
-## Status, honestly
-
-Verified against the real backend (Title 16KMA60R): wallet sign-in (throwaway keys), Book entries and counters, letters (cost, reward, blocked words),
-leaderboards, cloud save, courier registry, asset index and parcels between two accounts, and the in-game hooks driven in a browser; the game's
-own `verify` checklist passes. On **devnet**, with a funded key: the Memo seal (digest recomputed and matching) and the module cycle — mint, attributes
-read back, transfer, ownership moves. In a browser the same flows ran with a **stand-in wallet object** that signs with that key: sign-in, seal, write a
-module to the wallet, mail it to another courier, accept it there and watch it appear in the game (and disappear from the sender's).
-
-**Not verified:** a real wallet extension (Phantom/Solflare/Backpack) signing these transactions, and sign-in through the idosgames.com frame.
-**Known limits:** the game is client-side JavaScript, so a determined player can write any module into a wallet without finding it — the Core assets
-prove *ownership and transfer*, not that the module was earned; courier numbers are issued by the registry key, but a courier created before the
-registry (none exist yet on `kz_`) would not be in it. **Not built:** other couriers' ghosts at the test stands.
+| Pneumatic-mail station | Letter dialog with the moderation warning | The Book: a module written to the wallet and mailed to courier №5, all sealed |
 
 ---
 
-# КЕНОТАФ (игра)
+## Tech Stack
 
+| Layer | Technology |
+|-------|-----------|
+| Game | Vanilla JavaScript · Canvas 2D / WebGL · no engine, no build step |
+| Host app | React 19 · TypeScript · Vite |
+| Platform | iDos Games SDK (`@idosgames/core`, `app-shell`, `module-sdk`, `wallet`) · data collections · leaderboards · currency · bans |
+| Solana | `@solana/web3.js` · Memo program · Metaplex Core (`mpl-core` + Umi) · Phantom / Solflare / Backpack |
+| Testing | Node scripts against the real backend with throwaway wallets · devnet runs of the seal and the module cycle |
 
-Дизельпанк-метроидвания на чистом JavaScript и Canvas 2D. Курьер поднимается из Отстойника
-подземной аркологии к Печати, которую двести лет никто не открывал, — и делает то, чего ему
-делать не велели: читает чужие письма.
+---
 
-Пять зон, 86 комнат, восемь способностей, пять боссов и Экзамен Совета после финала, пять мини-боссов
-с аренами, 26 видов механизмов, испытательный стенд в каждой зоне, модули ранца, тридцать цилиндров
-с записями, пятнадцать заначек, две концовки.
-
-## Запуск
-
-Открыть `game/index.html` в браузере. Сервер и сборка не нужны, работает и по двойному клику (`file://`).
-
-## Управление
-
-| Клавиши | Действие |
-|---|---|
-| A / D | движение |
-| SPACE | прыжок, удержание — выше; в воздухе — второй прыжок (выхлоп); у рифлёной стены — кошки; под латунью — магнит; посреди рывка — прыжок с разгоном рывка |
-| S | присед, на бегу — подкат; в прыжке с ударом — удар вниз с отскоком |
-| W | взгляд вверх; с ударом — удар вверх |
-| ЛКМ · J | удар ключом — ломает узлы механизмов; удержание после взмаха — тяжёлый удар; на перегреве — РАЗРЫВ (узел ломается сразу) |
-| ПКМ · K | импульс резака: без урона — толкает, отражает снаряды, в миг замаха срывает атаку; с пробойником выбивает свинец |
-| SHIFT | рывок: неуязвим, сквозь механизмы, метит треснувшую деталь; в последний миг перед ударом — идеальное уклонение |
-| R | гарпун к латунному рыму: тянет и бросает сквозь кольцо с сохранением скорости; с движением назад — бросок назад |
-| Q (держать) | залатать куртку за РЕМОНТ (копится ударами) |
-| E | двери, рычаги, сальваж, цилиндры, заначки; у фонаря — отдых и сохранение; у разобранного механизма — прислушаться; у столба стенда — старт |
-| ESC | пауза: планшет-карта (TAB — весь мир), записи, ранец (модули), настройки, «Выбраться к входу» (если застряли) |
-| M | звук вкл / выкл |
-| Геймпад | A прыжок · X удар · B импульс · Y действие · RB рывок · RT гарпун · LB/LT (держать) залатать · START пауза |
-
-На каждое действие — одна клавиша; только удар и импульс продублированы на мышь.
-
-Меню и пауза работают без мыши: ↑/↓ и ENTER, ←/→ меняют значение, на геймпаде крестовина и A, назад — B.
-
-## Настройки
-
-Графика (КИНО · WebGL или ПРОСТАЯ · Canvas — для слабых видеокарт, после перезапуска), громкость (общая, музыка, звуки), тряска экрана (выкл / слабая / обычная — по умолчанию слабая,
-1–3 пикселя), сложность (легко / нормально / сложно — крепость механизмов, длина замаха, касание,
-урон по курьеру), субтитры записей, разрешение (до 1080 строк) и полный экран. Хранятся отдельно
-от сохранения игры.
-
-## Структура
+## Architecture
 
 ```
-game/                    вся игра
-  index.html             разметка, порядок скриптов
-  css/style.css
-  js/core/               утилиты, конфиг, настройки, ввод, звук, музыка (секвенсор с лейтмотивом), физика, сохранение
-  js/render/             текстуры, процедурный арт (Kit, Art, подзоны SUBART, поверхность — surface.js), реквизит,
-                         следы жизни (dress.js), ориентиры зон, частицы, камера, рендер
-  js/world/              комнаты по зонам (rooms/z1…z5, z*x.js — расширения, trials.js — стенды), фонари, записи, системы,
-                         пневмопочта, финал и титры, сцена боссов, стенды и призраки, заначки и Курьер 38, хабы, фонограммы, Экзамен Совета
-  js/combat/             бой «ломать, а не убивать»: узлы, механизм, обломки, отдача, детали-примитивы
-  js/entities/           игрок, бой, снаряды и зоны боссов (bossfx.js), мехи врагов и боссов (mechs/)
-  js/ui/                 HUD, реплики и голоса (voice.js), карта-планшет, меню и настройки, ранец, портреты, сцены, обучение
-docs/                    дизайн-документ (DESIGN.md), GDD, анализ
-screenshots/             снимки
+ ┌──────────────────────────── browser ────────────────────────────┐
+ │  host (React, iDos Games SDK)                game (iframe, vanilla JS)
+ │  ├ wallet sign-in                            ├ js/core/chain.js  ← the ONLY file that knows the host
+ │  ├ module "kenotaf" ◄──── postMessage ─────► │ hooks: letters read, guardians, stands, exam, ending,
+ │  │   bridge → Book, leaderboards, letters,   │        mail station, modules found
+ │  │   modules (the game follows the wallet)   └ runs alone (file://): every Chain call is a no-op
+ │  └ Book / Depot / letter dialogs · seal (Memo) · mint & transfer (Core)
+ └───────────────┬───────────────────────────────────┬──────────────┘
+                 │ platform API                      │ Solana RPC (mainnet)
+        iDos Games Title 16KMA60R            Memo program · Metaplex Core
+        data collections · counters          (every transaction signed by
+        leaderboards · Stamps · bans          the player's own wallet)
 ```
 
-Скрипты подключены классическими `<script>`, без ES-модулей: иначе игра не запустится по `file://`.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the platform configuration, the data model and the repository layout.
+
+---
+
+## Quick Start
+
+**Prerequisites:** Node.js 20+, a desktop browser.
+
+```bash
+# The game alone — no build, no server
+open game/index.html
+
+# Clone and run the whole thing (host + game) against the test namespace on devnet
+git clone https://github.com/kuatovadilzan504-source/kenotaf-colosseum
+cd kenotaf-colosseum/idos
+npm install
+printf 'VITE_KZ_NS=dev_\nVITE_KZ_CHAIN=devnet\n' > .env.local   # a production build sets neither
+npm run dev
+
+# Checks
+npm run typecheck
+node scripts/test-wallet-login.mjs     # Solana sign-in, no browser
+node scripts/test-backend.mjs          # ledger, courier registry, assets, parcels, leaderboards, cloud save → ALL OK
+KZ_TEST_KEY=<json key> node scripts/test-seal.ts       # Memo seal on devnet, digest read back
+KZ_TEST_KEY=<json key> node scripts/test-modules.ts    # Core mint → attributes → transfer → ownership moved (devnet)
+node scripts/verify-seal.mjs <courierNo> <signature>   # verify anyone's seal against the public ledger
+```
+
+---
+
+## Status
+
+Verified against the real backend: wallet sign-in, the Book and its counters, letters (cost, reward, blocked words), leaderboards, cloud save,
+courier registry, asset index and parcels between two accounts. On **devnet** with a funded key: the Memo seal (digest recomputed and matching) and
+the module cycle (mint, attributes, transfer, ownership). In a browser the same flows ran with a stand-in wallet object signing with that key —
+including a module mailed from one courier to another, disappearing from one backpack and appearing in the other.
+
+**Not verified yet:** a real wallet extension signing on mainnet, and sign-in inside the idosgames.com frame.
+**Known limit:** the game is client-side, so the Core assets prove *ownership and transfer*, not that a module was earned in play.
+
+---
+
+## Roadmap
+
+- [x] Complete single-player game (86 rooms, two endings, Council exam)
+- [x] Wallet sign-in, courier registry, the Book of the Council
+- [x] On-chain seal with independent verification
+- [x] Letters between couriers with stamps, word filter and moderation
+- [x] Backpack modules as Metaplex Core assets, mailed between couriers
+- [ ] End-to-end runs with Phantom, Solflare and Backpack on mainnet
+- [ ] Modules minted into a verified collection with a server-checked mint, so a module proves it was earned
+- [ ] Other couriers' ghosts at the test stands
+- [ ] English localization
+- [ ] Mobile wallets via WalletConnect
+
+---
+
+## Resources
+
+- [Live application](https://16kma60r.idos.games/)
+- [iDos Games page](https://idosgames.com/app/16KMA60R/)
+- [Judges' guide](docs/JUDGES.md) — a 5-minute route and how to check the Solana part yourself
+- [The game: controls, settings, structure (RU)](docs/GAME.md)
+- [Design document (RU)](docs/DESIGN.md)
